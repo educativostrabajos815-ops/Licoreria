@@ -779,7 +779,7 @@
             }
         }
 
-        // --- FIREBASE ASÍNCRONO Y SEGURO ---
+// --- FIREBASE ASÍNCRONO Y SEGURO ---
         async function initFirebase() {
             try {
                 const appModule = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
@@ -790,32 +790,39 @@
                 window.docFb = firestoreModule.doc; 
                 window.onSnapshotFb = firestoreModule.onSnapshot;
 
-                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-                if (firebaseConfig) {
-                    const app = appModule.initializeApp(firebaseConfig);
-                    window.auth = authModule.getAuth(app);
-                    window.db = firestoreModule.getFirestore(app);
-                    window.appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                // ---> TU CONFIGURACIÓN EXACTA DE FIREBASE <---
+                const firebaseConfig = {
+                  apiKey: "AIzaSyDU3rQDn6bjZaZGPif2r48mcgEcCqlzSn4",
+                  authDomain: "raspadillas-bb435.firebaseapp.com",
+                  projectId: "raspadillas-bb435",
+                  storageBucket: "raspadillas-bb435.firebasestorage.app",
+                  messagingSenderId: "1061169293100",
+                  appId: "1:1061169293100:web:abd4964a3c57c5f2f5ee89",
+                  measurementId: "G-ZE6YFRW4F6"
+                };
+                
+                // Le damos un nombre a tu base de datos
+                window.appId = 'raspadillas-pos-v1'; 
 
-                    const initAuth = async () => {
-                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                            await authModule.signInWithCustomToken(window.auth, __initial_auth_token);
-                        } else {
-                            await authModule.signInAnonymously(window.auth);
+                const app = appModule.initializeApp(firebaseConfig);
+                window.auth = authModule.getAuth(app);
+                window.db = firestoreModule.getFirestore(app);
+
+                const initAuth = async () => {
+                    await authModule.signInAnonymously(window.auth);
+                };
+
+                initAuth().then(() => {
+                    authModule.onAuthStateChanged(window.auth, (user) => {
+                        if (user) {
+                            window.userId = user.uid;
+                            loadDataFromFirebase();
                         }
-                    };
-
-                    initAuth().then(() => {
-                        authModule.onAuthStateChanged(window.auth, (user) => {
-                            if (user) {
-                                window.userId = user.uid;
-                                loadDataFromFirebase();
-                            }
-                        });
                     });
-                }
+                });
+                
             } catch (e) {
-                console.log("Modo local iniciado. (Sin conexión Firebase requerida).");
+                console.log("Modo local iniciado. (Sin conexión Firebase requerida).", e);
             }
         }
 
@@ -2070,3 +2077,4 @@
     </script>
 </body>
 </html>
+
