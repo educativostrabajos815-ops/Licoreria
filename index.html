@@ -1055,12 +1055,14 @@
             const profit = precio * (window.appConfig.soatMargin / 100); const txId = window.editingSoat ? window.editingSoat.id : Date.now(); const txDate = window.editingSoat ? new Date(window.editingSoat.date) : new Date();
             window.salesHistory.push({ id: txId, date: txDate, type: 'SOAT', placa, tipoVehiculo: tipo, dni, soatDesc: desc, total: precio, profit: profit, method: method }); saveData(); window.editingSoat = null;
             document.getElementById('soatForm').reset(); document.getElementById('soatHeaderTitle').innerHTML = '<i data-lucide="file-text" class="w-5 h-5 text-indigo-400"></i> Nuevo SOAT'; document.getElementById('soatBtnText').textContent = 'Registrar SOAT'; document.getElementById('cancelSoatEditBtn').classList.add('hidden');
-            showModal('¡SOAT Registrado!', `Cobrado: <strong class="text-white">S/ ${precio.toFixed(2)}</strong><br>Ganancia Neta: <strong class="text-emerald-400">S/ ${profit.toFixed(2)}</strong>`); renderActiveViewOnly();
+            showModal('¡SOAT Registrado!', `Póliza cobrada: <strong class="text-white">S/ ${precio.toFixed(2)}</strong><br>Ganancia Neta: <strong class="text-emerald-400">S/ ${profit.toFixed(2)}</strong>`); renderActiveViewOnly();
         }
         function renderSoatHistory() {
             const list = document.getElementById('soatHistoryList'); const hoy = new Date().toDateString(); const soatsHoy = window.salesHistory.filter(s => s.date?.toDateString() === hoy && s.type === 'SOAT').sort((a,b) => b.date - a.date);
             if (soatsHoy.length === 0) { list.innerHTML = `<div class="text-center text-slate-500 py-10 text-sm">Sin ventas hoy.</div>`; return; }
-            list.innerHTML = ''; soatsHoy.forEach(s => { const ganancia = s.profit !== undefined ? s.profit : s.total; const div = document.createElement('div'); div.className = "bg-slate-900 border border-slate-700 p-3 md:p-4 rounded-lg flex justify-between items-center group cursor-pointer hover:border-indigo-500 transition-colors"; div.onclick = () => showTransactionDetails(s.id, 'SOAT');
+            list.innerHTML = ''; soatsHoy.forEach(s => {
+                const ganancia = s.profit !== undefined ? s.profit : s.total; 
+                const div = document.createElement('div'); div.className = "bg-slate-900 border border-slate-700 p-3 md:p-4 rounded-lg flex justify-between items-center group cursor-pointer hover:border-indigo-500 transition-colors"; div.onclick = () => showTransactionDetails(s.id, 'SOAT');
                 div.innerHTML = `<div class="flex items-center gap-3"><div class="bg-indigo-500/20 text-indigo-400 p-2 rounded-lg"><i data-lucide="shield-check" class="w-4 h-4 md:w-5 md:h-5"></i></div><div><p class="font-bold text-white text-xs md:text-sm">Placa: ${s.placa}</p><p class="text-[10px] md:text-xs text-slate-400">${s.tipoVehiculo} • ${s.dni}</p></div></div><div class="text-right flex flex-col items-end gap-1"><p class="font-bold text-slate-300 line-through decoration-slate-500 text-[10px] md:text-xs">S/ ${s.total.toFixed(2)}</p><p class="font-bold text-emerald-400 text-sm md:text-base">+S/ ${ganancia.toFixed(2)}</p></div>`; list.appendChild(div);
             }); updateIcons();
         }
@@ -1078,7 +1080,8 @@
         function renderAgenteHistory() {
             const list = document.getElementById('agenteHistoryList'); const hoy = new Date().toDateString(); const agenteHoy = window.salesHistory.filter(s => s.date?.toDateString() === hoy && s.type === 'AGENTE').sort((a,b) => b.date - a.date);
             if (agenteHoy.length === 0) { list.innerHTML = `<div class="text-center text-slate-500 py-10 text-sm">Sin operaciones hoy.</div>`; return; }
-            list.innerHTML = ''; agenteHoy.forEach(s => { const ganancia = s.profit !== undefined ? s.profit : 0; let iconStr = 'arrow-right-left'; if(s.tipoOperacion === 'Depósito') iconStr = 'arrow-up-circle'; if(s.tipoOperacion === 'Retiro') iconStr = 'arrow-down-circle';
+            list.innerHTML = ''; agenteHoy.forEach(s => {
+                const ganancia = s.profit !== undefined ? s.profit : 0; let iconStr = 'arrow-right-left'; if(s.tipoOperacion === 'Depósito') iconStr = 'arrow-up-circle'; if(s.tipoOperacion === 'Retiro') iconStr = 'arrow-down-circle';
                 const div = document.createElement('div'); div.className = "bg-slate-900 border border-slate-700 p-3 md:p-4 rounded-lg flex justify-between items-center group cursor-pointer hover:border-bcp transition-colors"; div.onclick = () => showTransactionDetails(s.id, 'AGENTE');
                 div.innerHTML = `<div class="flex items-center gap-3"><div class="bg-orange-500/20 text-bcp p-2 rounded-lg"><i data-lucide="${iconStr}" class="w-4 h-4 md:w-5 md:h-5"></i></div><div><p class="font-bold text-white text-xs md:text-sm">${s.tipoOperacion}</p><p class="text-[10px] md:text-xs text-slate-400">${s.banco} • ${s.doc}</p></div></div><div class="text-right flex flex-col items-end gap-1"><p class="font-bold text-slate-300 text-[10px] md:text-xs">S/ ${s.total.toFixed(2)}</p><p class="font-bold text-emerald-400 text-sm md:text-base">+S/ ${ganancia.toFixed(2)}</p></div>`; list.appendChild(div);
             }); updateIcons();
@@ -1186,7 +1189,7 @@
             } else {
                 const sale = window.salesHistory.find(s => s.id == id); if (!sale) return;
                 if (type === 'POS') {
-                    window.editingPos = { id: sale.id, date: new Date(sale.date), originalData: {...sale} }; (sale.items || []).forEach(item => { const inv = window.inventory.find(p => p.id == item.product?.id); if (inv) inv.stock += item.quantity; }); window.cart = [...sale.items]; document.querySelector(`input[name="payment"][value="${sale.method || 'efectivo'}"]`).checked = true; window.salesHistory = window.salesHistory.filter(s => s.id != id); saveData(); document.getElementById('ventasHeaderTitle').innerHTML = '<i data-lucide="edit" class="w-5 h-5 md:w-6 md:h-6 text-indigo-400 inline"></i> Editando Venta POS'; document.getElementById('cancelEditBtn').classList.remove('hidden'); switchView('ventas'); updateCartUI(); 
+                    window.editingPos = { id: sale.id, date: new Date(sale.date), originalData: {...sale} }; (sale.items || []).forEach(item => { const inv = window.inventory.find(p => p.id == item.product?.id); if (inv) inv.stock += item.quantity; }); window.cart = [...sale.items]; document.querySelector(`input[name="payment"][value="${sale.method || 'efectivo'}"]`).checked = true; window.salesHistory = window.salesHistory.filter(s => s.id != id); saveData(); document.getElementById('ventasHeaderTitle').innerHTML = '<i data-lucide="edit" class="w-5 h-5 md:w-6 h-6 text-indigo-400 inline"></i> Editando Venta POS'; document.getElementById('cancelEditBtn').classList.remove('hidden'); switchView('ventas'); updateCartUI(); 
                 } else if (type === 'SOAT') {
                     window.editingSoat = { id: sale.id, date: new Date(sale.date), originalData: {...sale} }; document.getElementById('soat_placa').value = sale.placa; document.getElementById('soat_tipo').value = sale.tipoVehiculo; document.getElementById('soat_dni').value = sale.dni; document.getElementById('soat_desc').value = sale.soatDesc || ''; document.getElementById('soat_precio').value = sale.total; document.querySelector(`input[name="soatPayment"][value="${sale.method || 'efectivo'}"]`).checked = true; window.salesHistory = window.salesHistory.filter(s => s.id != id); saveData(); document.getElementById('soatHeaderTitle').innerHTML = '<i data-lucide="edit" class="w-4 h-4 md:w-5 md:h-5 text-indigo-400 inline"></i> Editando SOAT'; document.getElementById('soatBtnText').textContent = 'Guardar Cambios'; document.getElementById('cancelSoatEditBtn').classList.remove('hidden'); switchView('soat');
                 } else if (type === 'AGENTE') {
@@ -1204,6 +1207,17 @@
             switchView('ventas'); 
             updateCartUI();       
             initFirebase();       
+
+            // REGISTRO DEL SERVICE WORKER PARA MODO OFFLINE
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./sw.js')
+                .then(function(registration) {
+                    console.log('Service Worker registrado con éxito:', registration.scope);
+                })
+                .catch(function(error) {
+                    console.log('Error al registrar el Service Worker:', error);
+                });
+            }
         });
 
     </script>
