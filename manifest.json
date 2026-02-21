@@ -1,0 +1,43 @@
+{
+  "name": "CajaPOS - Sistema de Gestión",
+  "short_name": "CajaPOS",
+  "description": "Sistema avanzado de Punto de Venta para inventario, SOAT y Agente BCP.",
+  "start_url": "./pos_ventas.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "categories": ["business", "finance", "productivity"],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nueva Venta Rápida",
+      "short_name": "Vender",
+      "description": "Abre directamente la pantalla de la caja",
+      "url": "./pos_ventas.html"
+    },
+    {
+      "name": "Revisar Caja",
+      "short_name": "Caja",
+      "description": "Mira el total de ganancias del día",
+      "url": "./pos_ventas.html"
+    }
+  ]
+}

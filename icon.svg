@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Gradiente de fondo oscuro (combinando con tu tema Slate) -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <!-- Gradiente para los acentos (Indigo) -->
+    <linearGradient id="brandGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818cf8" />
+      <stop offset="100%" stop-color="#4f46e5" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Fondo redondeado como el ícono de una App móvil -->
+  <rect width="512" height="512" rx="115" fill="url(#bgGradient)" />
+  
+  <!-- Sombra base del ícono central -->
+  <path d="M156 226h200v160H156z" fill="#020617" opacity="0.5" transform="translate(0, 8)" rx="16"/>
+  
+  <!-- Pantalla del POS / Caja Registradora -->
+  <path d="M156 216h200v160H156z" fill="#0f172a" stroke="url(#brandGradient)" stroke-width="28" stroke-linejoin="round" rx="16"/>
+  
+  <!-- Tapa superior del POS -->
+  <path d="M120 216l36-60h200l36 60" fill="none" stroke="url(#brandGradient)" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Símbolo de "Venta Exitosa" (Emerald) -->
+  <circle cx="256" cy="296" r="38" fill="#10b981" />
+  <path d="M240 296l12 12 24-24" fill="none" stroke="#0f172a" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Ranura de ticket/tarjeta abajo -->
+  <path d="M156 376h200" stroke="url(#brandGradient)" stroke-width="24" stroke-linecap="round" />
+  
+  <!-- Texto Branding -->
+  <text x="256" y="450" font-family="system-ui, sans-serif" font-weight="800" font-size="44" fill="#cbd5e1" text-anchor="middle" letter-spacing="2">CajaPOS</text>
+  <text x="256" y="110" font-family="system-ui, sans-serif" font-weight="600" font-size="28" fill="#475569" text-anchor="middle" tracking="widest">LICORERÍA</text>
+</svg>
