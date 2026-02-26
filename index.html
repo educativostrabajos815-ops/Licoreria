@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>POS Licorería</title>
+    <title>POS Licorería - Sistema Completo</title>
     
     <!-- PWA Meta Tags -->
     <link rel="manifest" href="manifest.json">
@@ -75,6 +75,11 @@
             <button onclick="switchView('analisis')" id="nav-analisis" class="nav-btn flex flex-col items-center justify-center gap-1 p-2 md:py-2 text-slate-500 hover:text-slate-300 border-t-2 md:border-t-0 md:border-r-4 border-transparent w-full transition-colors">
                 <i data-lucide="bar-chart-2" class="w-5 h-5 md:w-6 md:h-6"></i>
                 <span class="text-[9px] md:text-[10px] font-medium hidden sm:block md:block">Análisis</span>
+            </button>
+            <!-- NUEVO BOTÓN: RESPALDO -->
+            <button onclick="switchView('respaldo')" id="nav-respaldo" class="nav-btn flex flex-col items-center justify-center gap-1 p-2 md:py-2 text-slate-500 hover:text-slate-300 border-t-2 md:border-t-0 md:border-r-4 border-transparent w-full transition-colors">
+                <i data-lucide="database" class="w-5 h-5 md:w-6 md:h-6"></i>
+                <span class="text-[9px] md:text-[10px] font-medium hidden sm:block md:block">Respaldo</span>
             </button>
         </div>
     </nav>
@@ -565,6 +570,66 @@
             </div>
         </div>
 
+        <!-- VISTA 6: RESPALDO Y RESTAURACIÓN -->
+        <div id="view-respaldo" class="view-section flex-1 flex flex-col h-full hidden bg-slate-900 relative">
+            <header class="p-4 md:p-6 bg-slate-900 border-b border-slate-800 flex justify-between items-center flex-shrink-0">
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold text-white">Respaldo de Datos</h1>
+                    <p class="text-xs md:text-sm text-slate-400 mt-1">Exporta o restaura la información de tu sistema mediante archivos JSON.</p>
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-auto p-4 md:p-6 flex flex-col lg:flex-row gap-4 md:gap-6">
+                <!-- Tarjeta Exportar -->
+                <div class="w-full lg:w-1/2 bg-slate-800 rounded-xl border border-slate-700 p-5 md:p-6 shadow-lg h-fit">
+                    <div class="w-12 h-12 bg-indigo-500/20 text-indigo-400 rounded-xl flex items-center justify-center mb-4">
+                        <i data-lucide="download-cloud" class="w-6 h-6"></i>
+                    </div>
+                    <h2 class="text-lg font-bold text-white mb-2">Generar Respaldo</h2>
+                    <p class="text-xs md:text-sm text-slate-400 mb-5">Selecciona qué información deseas guardar en tu dispositivo.</p>
+                    
+                    <div class="space-y-3 mb-6">
+                        <label class="flex items-center gap-3 cursor-pointer p-3 bg-slate-900 rounded-lg border border-slate-700 hover:border-indigo-500 transition-colors">
+                            <input type="checkbox" id="chkExpInv" class="w-5 h-5 rounded bg-slate-800 border-slate-600 text-indigo-500 focus:ring-indigo-500" checked>
+                            <span class="text-sm font-medium text-slate-200">Inventario y Productos (Almacén)</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer p-3 bg-slate-900 rounded-lg border border-slate-700 hover:border-indigo-500 transition-colors">
+                            <input type="checkbox" id="chkExpHist" class="w-5 h-5 rounded bg-slate-800 border-slate-600 text-indigo-500 focus:ring-indigo-500" checked>
+                            <span class="text-sm font-medium text-slate-200">Historial de Ventas y Gastos (Análisis)</span>
+                        </label>
+                        <label class="flex items-center gap-3 cursor-pointer p-3 bg-slate-900 rounded-lg border border-slate-700 hover:border-indigo-500 transition-colors">
+                            <input type="checkbox" id="chkExpConf" class="w-5 h-5 rounded bg-slate-800 border-slate-600 text-indigo-500 focus:ring-indigo-500" checked>
+                            <span class="text-sm font-medium text-slate-200">Configuraciones (Recargos y Comisiones)</span>
+                        </label>
+                    </div>
+
+                    <button onclick="exportBackup()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold transition-colors flex justify-center items-center gap-2 shadow-lg shadow-indigo-500/20">
+                        <i data-lucide="save" class="w-5 h-5"></i> Descargar Archivo (.json)
+                    </button>
+                </div>
+
+                <!-- Tarjeta Importar -->
+                <div class="w-full lg:w-1/2 bg-slate-800 rounded-xl border border-slate-700 p-5 md:p-6 shadow-lg h-fit">
+                    <div class="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-xl flex items-center justify-center mb-4">
+                        <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+                    </div>
+                    <h2 class="text-lg font-bold text-white mb-2">Restaurar Sistema</h2>
+                    <p class="text-xs md:text-sm text-slate-400 mb-5">Sube un archivo de respaldo previo para restaurar la información. <strong class="text-red-400">Atención: Esto reemplazará los datos actuales.</strong></p>
+                    
+                    <div class="border-2 border-dashed border-slate-600 rounded-xl p-8 flex flex-col items-center justify-center text-center bg-slate-900/50 mb-6">
+                        <i data-lucide="file-json" class="w-10 h-10 text-slate-500 mb-3"></i>
+                        <p class="text-sm text-slate-300 mb-1">Selecciona tu archivo de respaldo</p>
+                        <p class="text-[10px] md:text-xs text-slate-500">Solo formato .json</p>
+                    </div>
+
+                    <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="handleImportBackup(event)">
+                    <button onclick="triggerImport()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-colors flex justify-center items-center gap-2 shadow-lg shadow-emerald-500/20">
+                        <i data-lucide="folder-open" class="w-5 h-5"></i> Seleccionar Archivo
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- MODALES DE LA APLICACIÓN -->
@@ -821,7 +886,8 @@
                     measurementId: "G-ZE6YFRW4F6"
                 };
                 
-                window.appId = 'raspadillas-pos-v2';
+                // NUEVO ID DE BASE DE DATOS: Asegura que las versiones anteriores no interfieran
+                window.appId = 'raspadillas-pos-definitivo';
 
                 const app = appModule.initializeApp(firebaseConfig);
                 window.auth = authModule.getAuth(app);
@@ -839,7 +905,8 @@
 
         function loadDataFromFirebase() {
             if(!window.db || !window.userId || !window.onSnapshotFb) return;
-            const docRef = window.docFb(window.db, 'artifacts', window.appId, 'users', window.userId, 'pos_data_v1', 'store_data');
+            // RUTA ACTUALIZADA: Carpeta compartida globalmente (ignora IDs de usuarios individuales)
+            const docRef = window.docFb(window.db, 'artifacts', window.appId, 'public', 'data', 'sistema_pos', 'datos_centrales');
             
             window.onSnapshotFb(docRef, (docSnap) => {
                 if (docSnap.exists()) {
@@ -878,7 +945,8 @@
                     gastosHistory: window.gastosHistory.map(g => ({...g, date: safeISOString(g.date)})), 
                     appConfig: window.appConfig, lastUpdated: window.lastUpdated 
                 };
-                const docRef = window.docFb(window.db, 'artifacts', window.appId, 'users', window.userId, 'pos_data_v1', 'store_data');
+                // RUTA ACTUALIZADA: Carpeta compartida globalmente
+                const docRef = window.docFb(window.db, 'artifacts', window.appId, 'public', 'data', 'sistema_pos', 'datos_centrales');
                 window.setDocFb(docRef, dataToSave).catch(e=>{});
             } catch (e) {}
         }
@@ -956,6 +1024,7 @@
             if(view === 'agente') renderAgenteHistory();
             if(view === 'caja') renderCaja();
             if(view === 'analisis') renderAnalysis();
+            if(view === 'respaldo') updateIcons();
         }
 
         // --- UTILIDADES ---
@@ -1075,6 +1144,12 @@
             window.editingProductId = id; const title = document.getElementById('modalTitle');
             document.getElementById('advancedSalesSection').classList.add('hidden'); document.getElementById('advArrow').classList.remove('rotate-180');
             
+            // Poblar datalist de categorías
+            const datalist = document.getElementById('category-list');
+            let uniqueCategories = [...new Set(window.inventory.map(p => p.category).filter(Boolean))];
+            if (uniqueCategories.length === 0) { uniqueCategories = ['Licor', 'Gaseosa', 'Snack', 'Extras', 'Cigarros']; }
+            datalist.innerHTML = uniqueCategories.map(c => `<option value="${c}"></option>`).join('');
+
             if (id) {
                 const p = window.inventory.find(x => x.id == id);
                 document.getElementById('p_name').value = p?.name||''; document.getElementById('p_size').value = p?.size||''; document.getElementById('p_category').value = p?.category||'';
@@ -1656,9 +1731,95 @@
             }
         }
 
+        // --- LÓGICA DE RESPALDO Y RESTAURACIÓN ---
+        function exportBackup() {
+            const expInv = document.getElementById('chkExpInv').checked;
+            const expHist = document.getElementById('chkExpHist').checked;
+            const expConf = document.getElementById('chkExpConf').checked;
+
+            if (!expInv && !expHist && !expConf) {
+                showModal("Atención", "Debes seleccionar al menos una opción para exportar.");
+                return;
+            }
+
+            let backupData = {};
+            if (expInv) {
+                backupData.inventory = window.inventory;
+                backupData.currentIdCounter = window.currentIdCounter;
+            }
+            if (expHist) {
+                backupData.salesHistory = window.salesHistory.map(s => ({...s, date: safeISOString(s.date)}));
+                backupData.gastosHistory = window.gastosHistory.map(g => ({...g, date: safeISOString(g.date)}));
+            }
+            if (expConf) {
+                backupData.appConfig = window.appConfig;
+            }
+
+            const dataStr = JSON.stringify(backupData, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const dateStr = new Date().toISOString().split('T')[0];
+            
+            a.href = url;
+            a.download = `CajaPOS_Respaldo_${dateStr}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function triggerImport() {
+            document.getElementById('importFileInput').click();
+        }
+
+        function handleImportBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    let restoredThings = [];
+
+                    if (data.inventory !== undefined) {
+                        window.inventory = data.inventory;
+                        window.currentIdCounter = data.currentIdCounter || window.currentIdCounter;
+                        restoredThings.push("Inventario");
+                    }
+                    if (data.salesHistory !== undefined) {
+                        window.salesHistory = data.salesHistory.map(s => ({...s, date: safeDateParse(s.date)}));
+                        window.gastosHistory = (data.gastosHistory || []).map(g => ({...g, date: safeDateParse(g.date)}));
+                        restoredThings.push("Historial");
+                    }
+                    if (data.appConfig !== undefined) {
+                        window.appConfig = data.appConfig;
+                        restoredThings.push("Configuraciones");
+                    }
+
+                    if (restoredThings.length > 0) {
+                        saveData();
+                        updateCategoryFilters();
+                        updateCartUI();
+                        renderActiveViewOnly();
+                        showModal("Respaldo Restaurado", `Se ha recuperado con éxito: <br><strong class="text-white">${restoredThings.join(', ')}</strong>.`);
+                    } else {
+                        showModal("Error", "El archivo no contiene información válida para la aplicación.");
+                    }
+                } catch(err) {
+                    showModal("Error", "El archivo está dañado o no tiene formato JSON válido.");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; // Resetea el input por si quieres subir el mismo archivo después
+        }
+
         // --- EXPOSICIÓN GLOBAL PARA HTML ---
         window.switchView = switchView; window.openAddProductModal = openAddProductModal; window.closeAddProductModal = closeAddProductModal; window.saveProduct = saveProduct; window.filterLowStock = filterLowStock; window.deleteProduct = deleteProduct; window.addToCart = addToCart; window.changeCartItemQty = changeCartItemQty; window.changeCartItemMode = changeCartItemMode; window.closeSuccessModal = closeSuccessModal; window.openConfigModal = openConfigModal; window.closeConfigModal = closeConfigModal; window.saveConfig = saveConfig; window.registerSoat = registerSoat; window.cancelEditSoat = cancelEditSoat; window.registerAgente = registerAgente; window.cancelEditAgente = cancelEditAgente; window.cerrarCaja = cerrarCaja; window.registrarGasto = registrarGasto; window.cancelEditGasto = cancelEditGasto; window.cancelEditPos = cancelEditPos; window.changeMonth = changeMonth; window.showDayDetails = showDayDetails; window.showTransactionDetails = showTransactionDetails; window.closeTxModal = closeTxModal; window.deleteTransaction = deleteTransaction; window.editTransaction = editTransaction; window.showBreakdown = showBreakdown; window.closeBreakdownModal = closeBreakdownModal;
         window.toggleAdvancedSales = toggleAdvancedSales; window.toggleGroupInputs = toggleGroupInputs; window.addQtyDiscount = addQtyDiscount; window.updateMDiscount = updateMDiscount; window.removeQtyDiscount = removeQtyDiscount; window.addPromoRow = addPromoRow; window.updateMPromo = updateMPromo; window.removePromoRow = removePromoRow; window.addPromoItem = addPromoItem; window.updateMPromoItem = updateMPromoItem; window.removePromoItem = removePromoItem;
+        
+        window.exportBackup = exportBackup; window.triggerImport = triggerImport; window.handleImportBackup = handleImportBackup;
 
         // Renderizado inicial sin bloqueos
         document.addEventListener("DOMContentLoaded", () => {
