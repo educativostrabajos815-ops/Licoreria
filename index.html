@@ -76,7 +76,7 @@
                 <i data-lucide="bar-chart-2" class="w-5 h-5 md:w-6 md:h-6"></i>
                 <span class="text-[9px] md:text-[10px] font-medium hidden sm:block md:block">Análisis</span>
             </button>
-            <!-- NUEVO BOTÓN: RESPALDO -->
+            <!-- BOTÓN DE RESPALDO AÑADIDO -->
             <button onclick="switchView('respaldo')" id="nav-respaldo" class="nav-btn flex flex-col items-center justify-center gap-1 p-2 md:py-2 text-slate-500 hover:text-slate-300 border-t-2 md:border-t-0 md:border-r-4 border-transparent w-full transition-colors">
                 <i data-lucide="database" class="w-5 h-5 md:w-6 md:h-6"></i>
                 <span class="text-[9px] md:text-[10px] font-medium hidden sm:block md:block">Respaldo</span>
@@ -501,7 +501,7 @@
                     <h1 class="text-xl md:text-2xl font-bold text-white">Análisis</h1>
                 </div>
                 <div class="text-right">
-                    <p class="text-xs md:text-sm text-slate-400">Total Mes Neto</p>
+                    <p class="text-xs md:text-sm text-slate-400">Ganancia Mes Neto</p>
                     <p class="text-lg md:text-2xl font-bold text-emerald-400" id="analisis-total-mes">S/ 0.00</p>
                 </div>
             </header>
@@ -538,7 +538,7 @@
                         <div class="mt-3 md:mt-4 grid grid-cols-2 gap-2 md:gap-3">
                             <div class="bg-slate-900 rounded-lg p-2 md:p-3 border border-slate-700 text-center cursor-pointer hover:border-emerald-500 transition-colors group" onclick="showBreakdown('POS', window.currentSelectedDayObj)" title="Ver Desglose">
                                 <div class="flex justify-center items-center gap-1 mb-1">
-                                    <p class="text-[10px] md:text-xs text-slate-400">Ingreso POS</p>
+                                    <p class="text-[10px] md:text-xs text-slate-400">Ganancia POS</p>
                                     <i data-lucide="pie-chart" class="w-3 h-3 text-slate-600 group-hover:text-emerald-400"></i>
                                 </div>
                                 <p class="text-base md:text-lg font-bold text-emerald-400" id="selectedDayIngresos">S/ 0.00</p>
@@ -549,7 +549,7 @@
                             </div>
                             <div class="bg-slate-900 rounded-lg p-2 md:p-3 border border-slate-700 text-center cursor-pointer hover:border-white transition-colors group" onclick="showBreakdown('NETA', window.currentSelectedDayObj)" title="Ver Desglose">
                                 <div class="flex justify-center items-center gap-1 mb-1">
-                                    <p class="text-[10px] md:text-xs text-slate-400">Caja Neta</p>
+                                    <p class="text-[10px] md:text-xs text-slate-400">Ganancia Neta</p>
                                     <i data-lucide="pie-chart" class="w-3 h-3 text-slate-600 group-hover:text-white"></i>
                                 </div>
                                 <p class="text-base md:text-lg font-bold text-white" id="selectedDayNeto">S/ 0.00</p>
@@ -760,9 +760,15 @@
                         </div>
                     </div>
                     
-                    <div>
-                        <label class="block text-xs md:text-sm font-medium text-slate-300 mb-1">Precio Base (S/)</label>
-                        <input type="number" id="p_price" required min="0" step="0.10" placeholder="0.00" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500">
+                    <div class="grid grid-cols-2 gap-3 md:gap-4">
+                        <div>
+                            <label class="block text-xs md:text-sm font-medium text-slate-300 mb-1">Precio de Costo (S/)</label>
+                            <input type="number" id="p_cost" required min="0" step="0.01" placeholder="0.00" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs md:text-sm font-medium text-slate-300 mb-1">Precio Venta (S/)</label>
+                            <input type="number" id="p_price" required min="0" step="0.10" placeholder="0.00" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500">
+                        </div>
                     </div>
 
                     <!-- Venta Avanzada Accordion -->
@@ -1059,10 +1065,10 @@
             let efe = 0; let yap = 0; let tar = 0; let title = "";
             if (type === 'POS') {
                 title = "Desglose Ingresos POS";
-                sales.filter(s => s.type === 'POS').forEach(s => { const val = s.profit !== undefined ? s.profit : s.total; const m = (s.method || 'efectivo').toLowerCase(); if(m === 'efectivo') efe += val; else if(m === 'tarjeta') tar += val; else yap += val; });
+                sales.filter(s => s.type === 'POS').forEach(s => { const val = s.total; const m = (s.method || 'efectivo').toLowerCase(); if(m === 'efectivo') efe += val; else if(m === 'tarjeta') tar += val; else yap += val; });
             } else if (type === 'NETA') {
                 title = "Desglose Caja Neta";
-                sales.forEach(s => { const val = s.profit !== undefined ? s.profit : s.total; const m = (s.method || 'efectivo').toLowerCase(); if(m === 'efectivo') efe += val; else if(m === 'tarjeta') tar += val; else yap += val; });
+                sales.forEach(s => { const val = s.type === 'POS' ? s.total : (s.profit || 0); const m = (s.method || 'efectivo').toLowerCase(); if(m === 'efectivo') efe += val; else if(m === 'tarjeta') tar += val; else yap += val; });
                 gastos.forEach(g => { const m = (g.method || 'efectivo').toLowerCase(); if(m === 'efectivo') efe -= g.monto; else if(m === 'tarjeta') tar -= g.monto; else yap -= g.monto; });
             }
             document.getElementById('brkTitle').textContent = title; document.getElementById('brkDate').textContent = tDate.toLocaleDateString('es-PE');
@@ -1153,7 +1159,7 @@
             if (id) {
                 const p = window.inventory.find(x => x.id == id);
                 document.getElementById('p_name').value = p?.name||''; document.getElementById('p_size').value = p?.size||''; document.getElementById('p_category').value = p?.category||'';
-                document.getElementById('p_price').value = p?.price||''; document.getElementById('p_stock').value = p?.stock||''; document.getElementById('p_minstock').value = p?.minStock||'';
+                document.getElementById('p_price').value = p?.price||''; document.getElementById('p_cost').value = p?.cost||''; document.getElementById('p_stock').value = p?.stock||''; document.getElementById('p_minstock').value = p?.minStock||'';
                 
                 document.getElementById('p_isGroup').checked = !!p.isGroup;
                 document.getElementById('p_unitsPerGroup').value = p.unitsPerGroup || '';
@@ -1176,17 +1182,17 @@
         
         function saveProduct() {
             const name = document.getElementById('p_name').value.trim(); const size = document.getElementById('p_size').value.trim(); const category = document.getElementById('p_category').value || 'Otros';
-            const price = parseFloat(document.getElementById('p_price').value); const stock = parseInt(document.getElementById('p_stock').value); const minStock = parseInt(document.getElementById('p_minstock').value);
+            const price = parseFloat(document.getElementById('p_price').value); const cost = parseFloat(document.getElementById('p_cost').value) || 0; const stock = parseInt(document.getElementById('p_stock').value); const minStock = parseInt(document.getElementById('p_minstock').value);
             const isGroup = document.getElementById('p_isGroup').checked;
             const unitsPerGroup = parseInt(document.getElementById('p_unitsPerGroup').value) || 1;
             const unitPrice = parseFloat(document.getElementById('p_unitPrice').value) || price;
 
-            if(!name || !size || isNaN(price) || isNaN(stock) || isNaN(minStock)) return;
+            if(!name || !size || isNaN(price) || isNaN(cost) || isNaN(stock) || isNaN(minStock)) return;
 
             const validPromos = window.modalPromos.map(p => ({...p, items: p.items.filter(i => i.id !== '')})).filter(p => p.name && !isNaN(p.price));
             const validDiscounts = window.modalDiscounts.filter(d => !isNaN(d.qty) && !isNaN(d.price));
 
-            const prodData = { name, size, category, price, stock, minStock, color: getCategoryColor(category), isGroup, unitsPerGroup: isGroup?unitsPerGroup:1, unitPrice: isGroup?unitPrice:price, qtyDiscounts: validDiscounts, promos: validPromos };
+            const prodData = { name, size, category, price, cost, stock, minStock, color: getCategoryColor(category), isGroup, unitsPerGroup: isGroup?unitsPerGroup:1, unitPrice: isGroup?unitPrice:price, qtyDiscounts: validDiscounts, promos: validPromos };
 
             if (window.editingProductId) { 
                 const idx = window.inventory.findIndex(x => x.id == window.editingProductId); 
@@ -1232,7 +1238,7 @@
                 }
 
                 const tr = document.createElement('tr'); tr.className = 'hover:bg-slate-800/50 transition-colors group border-b border-slate-700/50';
-                tr.innerHTML = `<td class="p-3 md:p-4"><div class="flex items-center gap-2 md:gap-3"><div class="${p.color} w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center flex-shrink-0"><i data-lucide="${getCategoryIcon(p.category)}" class="w-4 h-4 md:w-5 md:h-5"></i></div><div><p class="font-bold text-sm md:text-base text-slate-200 group-hover:text-indigo-400 truncate max-w-[120px] md:max-w-[200px]">${p.name}</p><p class="text-[10px] md:text-xs text-slate-500">${p.size} ${p.promos?.length>0?' • <span class="text-indigo-400">Promos</span>':''}</p></div></div></td><td class="p-3 md:p-4 text-slate-400 capitalize text-xs md:text-sm">${p.category}</td><td class="p-3 md:p-4 text-right font-medium text-slate-300 text-xs md:text-sm">S/ ${p.price.toFixed(2)}</td><td class="p-3 md:p-4 text-center align-middle">${stockText}</td><td class="p-3 md:p-4">${statusHtml}</td><td class="p-3 md:p-4 text-center"><div class="flex items-center justify-center gap-1 md:gap-2"><button onclick="openAddProductModal(${p.id})" class="text-slate-500 hover:text-indigo-400 transition-colors p-1.5 md:p-2 rounded-lg hover:bg-slate-700"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteProduct(${p.id})" class="text-slate-500 hover:text-red-400 transition-colors p-1.5 md:p-2 rounded-lg hover:bg-slate-700"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></td>`;
+                tr.innerHTML = `<td class="p-3 md:p-4"><div class="flex items-center gap-2 md:gap-3"><div class="${p.color} w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center flex-shrink-0"><i data-lucide="${getCategoryIcon(p.category)}" class="w-4 h-4 md:w-5 md:h-5"></i></div><div><p class="font-bold text-sm md:text-base text-slate-200 group-hover:text-indigo-400 truncate max-w-[120px] md:max-w-[200px]">${p.name}</p><p class="text-[10px] md:text-xs text-slate-500">${p.size} ${p.promos?.length>0?' • <span class="text-indigo-400">Promos</span>':''}</p></div></div></td><td class="p-3 md:p-4 text-slate-400 capitalize text-xs md:text-sm">${p.category}</td><td class="p-3 md:p-4 text-right font-medium text-slate-300 text-xs md:text-sm">S/ ${p.price.toFixed(2)}<span class="block text-[9px] text-slate-500 font-normal">Costo: S/ ${(p.cost || 0).toFixed(2)}</span></td><td class="p-3 md:p-4 text-center align-middle">${stockText}</td><td class="p-3 md:p-4">${statusHtml}</td><td class="p-3 md:p-4 text-center"><div class="flex items-center justify-center gap-1 md:gap-2"><button onclick="openAddProductModal(${p.id})" class="text-slate-500 hover:text-indigo-400 transition-colors p-1.5 md:p-2 rounded-lg hover:bg-slate-700"><i data-lucide="edit-2" class="w-4 h-4"></i></button><button onclick="deleteProduct(${p.id})" class="text-slate-500 hover:text-red-400 transition-colors p-1.5 md:p-2 rounded-lg hover:bg-slate-700"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></td>`;
                 tbody.appendChild(tr);
             });
             document.getElementById('stat-total-products').textContent = window.inventory.length; document.getElementById('stat-low-stock').textContent = lowStockCount; updateIcons();
@@ -1465,13 +1471,42 @@
             const method = document.querySelector('input[name="payment"]:checked').value; 
             
             let subtotal = 0;
-            window.cart.forEach(item => subtotal += calculateItemTotal(item));
+            let totalCost = 0;
+            
+            window.cart.forEach(item => { 
+                subtotal += calculateItemTotal(item);
+                
+                // --- Cálculo de Costo Real ---
+                const p = item.product;
+                const inv = window.inventory.find(x => x.id == p.id); 
+                let itemCost = inv ? (inv.cost || 0) : (p.cost || 0);
+
+                if (item.type === 'package') {
+                    totalCost += (item.qty * p.unitsPerGroup * itemCost);
+                } else {
+                    totalCost += (item.qty * itemCost);
+                }
+
+                if (item.type === 'promo') {
+                    const promo = p.promos?.find(pr => pr.id === item.promoId);
+                    if (promo && promo.items) {
+                        promo.items.forEach(pi => {
+                            const lInv = window.inventory.find(x => x.id == pi.id);
+                            if (lInv) totalCost += (item.qty * pi.qty * (lInv.cost || 0));
+                        });
+                    }
+                }
+            });
+
             let surcharge = 0;
             if (method === 'tarjeta') {
                 surcharge = subtotal * ((window.appConfig.tarjetaMargin || 5) / 100);
                 surcharge = Math.ceil(surcharge * 10) / 10;
             }
             const total = subtotal + surcharge;
+            
+            // LA GANANCIA NETA SE CALCULA SIN EL RECARGO DE TARJETA (Ya que ese dinero es del banco)
+            const profit = subtotal - totalCost;
             
             let lowStockAlerts = [];
 
@@ -1501,7 +1536,7 @@
             const txId = window.editingPos ? window.editingPos.id : Date.now();
             const txDate = window.editingPos ? new Date(window.editingPos.date) : new Date();
             
-            window.salesHistory.push({ id: txId, date: txDate, type: 'POS', total: total, profit: total, method: method, items: [...window.cart] });
+            window.salesHistory.push({ id: txId, date: txDate, type: 'POS', total: total, profit: profit, method: method, items: [...window.cart] });
             saveData();
             window.editingPos = null;
 
@@ -1561,10 +1596,25 @@
         function cancelEditGasto() { if (window.editingGasto) { window.gastosHistory.push(window.editingGasto.originalData); saveData(); window.editingGasto = null; } document.getElementById('gastoDesc').value = ''; document.getElementById('gastoMonto').value = ''; document.getElementById('gastoHeaderTitle').textContent = 'Registrar Gasto de Tienda'; document.getElementById('btnGasto').textContent = 'Añadir'; document.getElementById('btnGasto').classList.replace('bg-indigo-600', 'bg-slate-700'); document.getElementById('cancelGastoEditBtn').classList.add('hidden'); renderActiveViewOnly(); }
         function renderCaja() {
             const hoy = new Date().toDateString(); const ventasHoy = window.salesHistory.filter(s => s.date?.toDateString() === hoy);
-            const totalPos = ventasHoy.filter(s => s.type === 'POS').reduce((sum, s) => sum + (s.profit !== undefined ? s.profit : s.total), 0); const totalSoatProfit = ventasHoy.filter(s => s.type === 'SOAT').reduce((sum, s) => sum + (s.profit || 0), 0); const totalAgenteProfit = ventasHoy.filter(s => s.type === 'AGENTE').reduce((sum, s) => sum + (s.profit || 0), 0);
-            const gastosHoy = window.gastosHistory.filter(g => g.date?.toDateString() === hoy); const totalEgresos = gastosHoy.reduce((sum, g) => sum + g.monto, 0);
-            const totalCajaNeta = totalPos + totalSoatProfit + totalAgenteProfit - totalEgresos;
-            document.getElementById('caja-ingresos-pos').textContent = `S/ ${totalPos.toFixed(2)}`; document.getElementById('caja-ingresos-soat').textContent = `S/ ${totalSoatProfit.toFixed(2)}`; document.getElementById('caja-ingresos-agente').textContent = `S/ ${totalAgenteProfit.toFixed(2)}`; document.getElementById('caja-gastos-totales').textContent = `S/ ${totalEgresos.toFixed(2)}`; document.getElementById('caja-total').textContent = `S/ ${totalCajaNeta.toFixed(2)}`;
+            
+            // Cálculos
+            const totalPosBruto = ventasHoy.filter(s => s.type === 'POS').reduce((sum, s) => sum + s.total, 0); 
+            const totalPosProfit = ventasHoy.filter(s => s.type === 'POS').reduce((sum, s) => sum + (s.profit !== undefined ? s.profit : s.total), 0);
+            const totalSoatProfit = ventasHoy.filter(s => s.type === 'SOAT').reduce((sum, s) => sum + (s.profit || 0), 0); 
+            const totalAgenteProfit = ventasHoy.filter(s => s.type === 'AGENTE').reduce((sum, s) => sum + (s.profit || 0), 0);
+            const gastosHoy = window.gastosHistory.filter(g => g.date?.toDateString() === hoy); 
+            const totalEgresos = gastosHoy.reduce((sum, g) => sum + g.monto, 0);
+            
+            const totalCajaFisica = totalPosBruto + totalSoatProfit + totalAgenteProfit - totalEgresos;
+            const totalGananciaNeta = totalPosProfit + totalSoatProfit + totalAgenteProfit - totalEgresos;
+
+            // UI
+            document.getElementById('caja-ingresos-pos').innerHTML = `S/ ${totalPosBruto.toFixed(2)}<span class="block text-[10px] text-slate-400 font-normal mt-0.5">Ganancia: S/ ${totalPosProfit.toFixed(2)}</span>`; 
+            document.getElementById('caja-ingresos-soat').textContent = `S/ ${totalSoatProfit.toFixed(2)}`; 
+            document.getElementById('caja-ingresos-agente').textContent = `S/ ${totalAgenteProfit.toFixed(2)}`; 
+            document.getElementById('caja-gastos-totales').textContent = `S/ ${totalEgresos.toFixed(2)}`; 
+            document.getElementById('caja-total').innerHTML = `S/ ${totalCajaFisica.toFixed(2)}<span class="block text-xs text-indigo-300 font-normal mt-1">Ganancia Real: S/ ${totalGananciaNeta.toFixed(2)}</span>`;
+            
             const lista = document.getElementById('listaGastos'); lista.innerHTML = '';
             if (gastosHoy.length === 0) { lista.innerHTML = `<div class="text-center text-slate-500 py-4 text-sm">Sin gastos hoy.</div>`; }
             gastosHoy.sort((a,b) => b.date - a.date).forEach(g => {
@@ -1588,12 +1638,17 @@
             const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
             const year = window.currentCalDate.getFullYear(); const month = window.currentCalDate.getMonth();
             document.getElementById('calendarMonthLabel').textContent = `${monthNames[month]} ${year}`;
+            
             const monthSales = window.salesHistory.filter(s => isValidDate(s.date) && s.date.getFullYear() === year && s.date.getMonth() === month); const monthGastos = window.gastosHistory.filter(g => isValidDate(g.date) && g.date.getFullYear() === year && g.date.getMonth() === month);
+            
+            // El análisis del mes refleja la GANANCIA PURA (Profit)
             const totalIngresos = monthSales.reduce((sum, s) => sum + (s.profit !== undefined ? s.profit : s.total), 0); const totalGastos = monthGastos.reduce((sum, g) => sum + g.monto, 0); const totalMesNeta = totalIngresos - totalGastos;
+            
             document.getElementById('analisis-total-mes').textContent = `S/ ${totalMesNeta.toFixed(2)}`; grid.innerHTML = '';
             const firstDay = new Date(year, month, 1).getDay(); const daysInMonth = new Date(year, month + 1, 0).getDate();
             for (let i = 0; i < firstDay; i++) { grid.insertAdjacentHTML('beforeend', `<div class="p-1 md:p-2 border border-slate-800/50 rounded-lg bg-slate-900/30"></div>`); }
             const hoyStr = new Date().toDateString();
+            
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayDate = new Date(year, month, day); const isToday = dayDate.toDateString() === hoyStr;
                 const daySales = monthSales.filter(s => s.date.getDate() === day); const dayGastosArr = monthGastos.filter(g => g.date.getDate() === day);
@@ -1609,11 +1664,15 @@
         function showDayDetails(dateObj, daySales, dayGastosArr) {
             window.currentSelectedDayObj = dateObj; document.getElementById('selectedDateLabel').textContent = dateObj.toLocaleDateString('es-PE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
             document.querySelectorAll('.calendar-day').forEach(el => el.classList.remove('ring-2', 'ring-indigo-500'));
+            
             const totalIngresos = daySales.reduce((sum, s) => sum + (s.profit !== undefined ? s.profit : s.total), 0); const totalGastos = dayGastosArr.reduce((sum, g) => sum + g.monto, 0); const totalNeto = totalIngresos - totalGastos;
+            
             document.getElementById('selectedDayIngresos').textContent = `S/ ${totalIngresos.toFixed(2)}`; document.getElementById('selectedDayGastos').textContent = `S/ ${totalGastos.toFixed(2)}`; document.getElementById('selectedDayNeto').textContent = `S/ ${totalNeto.toFixed(2)}`; document.getElementById('selectedDayCount').textContent = daySales.length + dayGastosArr.length;
             const list = document.getElementById('selectedDayTransactions'); list.innerHTML = '';
+            
             if (daySales.length === 0 && dayGastosArr.length === 0) { list.innerHTML = `<div class="h-full flex items-center justify-center text-slate-500 text-xs md:text-sm text-center">Sin transacciones.</div>`; return; }
             const allTransactions = [...daySales.map(s => ({ ...s, isGasto: false })), ...dayGastosArr.map(g => ({ ...g, isGasto: true, type: 'GASTO' }))].sort((a, b) => b.date - a.date); 
+            
             allTransactions.forEach(t => {
                 let icon, color, titulo, subtitulo, montoHtml, methodHtml;
                 if (t.isGasto) { icon = 'trending-down'; color = 'text-red-400'; titulo = 'Gasto'; subtitulo = t.desc; montoHtml = `<p class="font-bold text-red-400 text-xs md:text-sm">- S/ ${t.monto.toFixed(2)}</p>`; methodHtml = `<p class="text-[9px] md:text-[10px] text-slate-500 uppercase">${t.method || 'efectivo'}</p>`; } 
@@ -1621,7 +1680,7 @@
                 else { 
                     icon = t.type === 'SOAT' ? 'shield-check' : 'shopping-cart'; color = t.type === 'SOAT' ? 'text-indigo-400' : 'text-emerald-400'; titulo = `Venta ${t.type}`; subtitulo = t.type === 'SOAT' ? `${t.placa}` : `${t.items ? t.items.length : 0} item(s)`; 
                     let saleProfit = t.profit !== undefined ? t.profit : t.total; 
-                    montoHtml = `<p class="font-bold text-emerald-400 text-xs md:text-sm">+ S/ ${saleProfit.toFixed(2)}</p>`; methodHtml = `<p class="text-[9px] md:text-[10px] text-slate-500 uppercase">${t.method || 'efectivo'}</p>`; 
+                    montoHtml = `<p class="font-bold text-emerald-400 text-xs md:text-sm">+ S/ ${saleProfit.toFixed(2)} <span class="text-[9px] font-normal text-slate-400">(Bruto: S/ ${t.total.toFixed(2)})</span></p>`; methodHtml = `<p class="text-[9px] md:text-[10px] text-slate-500 uppercase">${t.method || 'efectivo'}</p>`; 
                 }
                 list.insertAdjacentHTML('beforeend', `<div onclick="showTransactionDetails(${t.id}, '${t.type}')" class="bg-slate-900 p-2.5 md:p-3 rounded-lg border border-slate-700 flex justify-between items-center cursor-pointer hover:border-indigo-500 transition-colors"><div class="flex items-center gap-2 md:gap-3"><i data-lucide="${icon}" class="w-4 h-4 md:w-5 md:h-5 ${color}"></i><div><p class="text-xs md:text-sm font-bold text-white">${titulo}</p><p class="text-[10px] md:text-xs text-slate-400 truncate max-w-[100px] md:max-w-[160px]">${subtitulo}</p></div></div><div class="text-right flex flex-col items-end">${montoHtml}${methodHtml}</div></div>`);
             }); updateIcons();
@@ -1655,7 +1714,7 @@
                     return `<div class="flex justify-between items-center text-xs md:text-sm mb-2 border-b border-slate-700/50 pb-2 last:border-0 last:mb-0 last:pb-0"><div><p class="text-white">${name}</p><p class="text-[10px] md:text-xs text-slate-400">${item.qty} unid(s) • ${desc}</p></div><p class="font-bold text-emerald-400">S/ ${calculateItemTotal(item).toFixed(2)}</p></div>`;
                 }).join('') : '';
 
-                body.innerHTML = `<div class="mb-4"><p class="text-[10px] md:text-xs text-slate-400 mb-1">Fecha y Hora</p><p class="text-xs md:text-sm text-white">${new Date(sale.date).toLocaleString('es-PE')}</p></div><div class="bg-slate-900 rounded-lg p-3 md:p-4 border border-slate-700 mb-4"><p class="text-[10px] md:text-xs font-bold text-slate-500 uppercase mb-2 md:mb-3 tracking-wider">Productos</p>${itemsHtml}</div><div class="flex justify-between items-center bg-slate-900 rounded-lg p-3 md:p-4 border border-slate-700"><div><p class="text-[10px] md:text-xs text-slate-400">Total Ingresado</p><p class="text-[9px] md:text-[10px] text-slate-500 uppercase">Vía ${sale.method || 'Efectivo'}</p></div><p class="text-lg md:text-xl font-bold text-white">S/ ${sale.total.toFixed(2)}</p></div>`;
+                body.innerHTML = `<div class="mb-4"><p class="text-[10px] md:text-xs text-slate-400 mb-1">Fecha y Hora</p><p class="text-xs md:text-sm text-white">${new Date(sale.date).toLocaleString('es-PE')}</p></div><div class="bg-slate-900 rounded-lg p-3 md:p-4 border border-slate-700 mb-4"><p class="text-[10px] md:text-xs font-bold text-slate-500 uppercase mb-2 md:mb-3 tracking-wider">Productos</p>${itemsHtml}</div><div class="flex justify-between items-center bg-slate-900 rounded-lg p-3 md:p-4 border border-slate-700"><div><p class="text-[10px] md:text-xs text-slate-400">Total Ingresado (Bruto)</p><p class="text-[9px] md:text-[10px] text-slate-500 uppercase">Vía ${sale.method || 'Efectivo'}</p></div><div class="text-right"><p class="text-lg md:text-xl font-bold text-white">S/ ${sale.total.toFixed(2)}</p><p class="text-[10px] md:text-xs text-emerald-400 mt-1">Ganancia Neta: S/ ${(sale.profit !== undefined ? sale.profit : sale.total).toFixed(2)}</p></div></div>`;
             } else if (type === 'SOAT') {
                 const sale = window.salesHistory.find(s => s.id == id); if(!sale) return; title.innerHTML = `<i data-lucide="shield-check" class="w-5 h-5 text-indigo-400"></i> Detalle SOAT`;
                 body.innerHTML = `<div class="mb-4"><p class="text-[10px] md:text-xs text-slate-400 mb-1">Fecha y Hora</p><p class="text-xs md:text-sm text-white">${new Date(sale.date).toLocaleString('es-PE')}</p></div><div class="bg-slate-900 rounded-lg p-3 md:p-4 border border-slate-700 space-y-2 md:space-y-3 mb-4"><div class="flex justify-between border-b border-slate-800 pb-2"><span class="text-slate-400 text-xs md:text-sm">Placa:</span><span class="text-white font-bold text-xs md:text-sm">${sale.placa}</span></div><div class="flex justify-between border-b border-slate-800 pb-2"><span class="text-slate-400 text-xs md:text-sm">Vehículo:</span><span class="text-white text-xs md:text-sm">${sale.tipoVehiculo}</span></div><div class="flex justify-between border-b border-slate-800 pb-2"><span class="text-slate-400 text-xs md:text-sm">DNI/RUC:</span><span class="text-white text-xs md:text-sm">${sale.dni}</span></div><div><span class="block text-slate-400 text-xs md:text-sm mb-1">Anotación:</span><span class="block text-white text-xs md:text-sm bg-slate-800 p-2 rounded">${sale.soatDesc || 'Sin anotación.'}</span></div></div><div class="flex justify-between items-center bg-slate-900 rounded-lg p-3 md:p-4 border border-slate-700"><div><p class="text-[10px] md:text-xs text-slate-400">Cobrado al Cliente</p><p class="text-[9px] md:text-[10px] text-slate-500 uppercase">Vía ${sale.method || 'Efectivo'}</p></div><div class="text-right border-l border-slate-700 pl-3 md:pl-4"><p class="text-[10px] md:text-xs text-slate-400">Ganancia Neta</p><p class="text-base md:text-xl font-bold text-emerald-400">S/ ${(sale.profit || sale.total).toFixed(2)}</p></div></div>`;
