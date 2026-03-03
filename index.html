@@ -501,13 +501,14 @@
                 </div>
             </header>
 
-            <div class="flex-1 p-4 md:p-6 overflow-y-auto flex flex-col gap-4 md:gap-6">
+            <div class="flex-1 p-4 md:p-6 overflow-y-auto flex flex-col gap-4 md:gap-6 no-scrollbar">
+                
                 <!-- Panel de Filtros Personalizados -->
                 <div class="w-full bg-slate-800 rounded-xl border border-slate-700 p-4 md:p-5 shadow-lg flex-shrink-0">
-                    <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-4">
-                        <div class="w-full md:w-auto">
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-4">
+                        <div class="w-full lg:w-auto">
                             <h3 class="text-sm font-bold text-white mb-3">Rango de Análisis y Categorías</h3>
-                            <div class="flex flex-wrap gap-3">
+                            <div class="flex flex-wrap items-end gap-3 mb-3">
                                 <div>
                                     <label class="block text-[10px] text-slate-400 mb-1 uppercase tracking-wider">Desde</label>
                                     <input type="date" id="filterStartDate" onchange="updateAnalysisRange()" class="w-32 md:w-36 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs md:text-sm text-white focus:outline-none focus:border-indigo-500">
@@ -516,29 +517,32 @@
                                     <label class="block text-[10px] text-slate-400 mb-1 uppercase tracking-wider">Hasta</label>
                                     <input type="date" id="filterEndDate" onchange="updateAnalysisRange()" class="w-32 md:w-36 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs md:text-sm text-white focus:outline-none focus:border-indigo-500">
                                 </div>
-                                <div>
-                                    <label class="block text-[10px] text-slate-400 mb-1 uppercase tracking-wider">Categoría</label>
-                                    <select id="analysisCategoryFilter" onchange="updateAnalysisRange()" class="w-40 md:w-48 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs md:text-sm text-white focus:outline-none focus:border-indigo-500">
-                                        <option value="">Todas las categorías</option>
-                                    </select>
+                                <div class="flex items-center gap-1.5 ml-0 lg:ml-2">
+                                    <button onclick="setAnalysisRange('hoy')" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-medium transition-colors">Hoy</button>
+                                    <button onclick="setAnalysisRange('semana')" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-medium transition-colors">7 Días</button>
+                                    <button onclick="setAnalysisRange('mes')" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-medium transition-colors">30 Días</button>
+                                    <button onclick="setAnalysisRange('año')" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-medium transition-colors">1 Año</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Píldoras Multi-Categoría -->
+                            <div>
+                                <label class="block text-[10px] text-slate-400 mb-1.5 uppercase tracking-wider">Filtrar Categorías <span class="normal-case text-slate-500">(Puedes elegir varias)</span></label>
+                                <div id="analysisCategoryFilter" class="flex flex-wrap gap-2">
+                                    <!-- Llenado por JS -->
                                 </div>
                             </div>
                         </div>
-                        <div class="flex items-center gap-1.5 w-full md:w-auto">
-                            <button onclick="setAnalysisRange('hoy')" class="flex-1 md:flex-none px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-medium transition-colors">Hoy</button>
-                            <button onclick="setAnalysisRange('semana')" class="flex-1 md:flex-none px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-medium transition-colors">7 Días</button>
-                            <button onclick="setAnalysisRange('mes')" class="flex-1 md:flex-none px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-medium transition-colors">Mes</button>
-                            <button onclick="setAnalysisRange('año')" class="flex-1 md:flex-none px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-medium transition-colors">Año</button>
-                        </div>
                     </div>
                     
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 pt-3 border-t border-slate-700" id="analysisRangeSummary">
+                    <!-- Tarjetas de Resumen del Rango -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 pt-4 border-t border-slate-700" id="analysisRangeSummary">
                         <!-- Dynamic Stats injected here -->
                     </div>
                 </div>
 
-                <div class="flex flex-col lg:flex-row gap-4 md:gap-6 flex-1">
-                    <div class="w-full lg:w-2/3 bg-slate-800 rounded-xl border border-slate-700 p-4 md:p-6 flex flex-col min-h-[400px] shadow-lg">
+                <div class="flex flex-col lg:flex-row gap-4 md:gap-6 flex-1 min-h-[400px]">
+                    <div class="w-full lg:w-2/3 bg-slate-800 rounded-xl border border-slate-700 p-4 md:p-6 flex flex-col shadow-lg">
                         <div class="flex justify-between items-center mb-4 md:mb-6">
                             <h2 class="text-lg md:text-xl font-bold text-white" id="calendarMonthLabel">Mes Año</h2>
                             <div class="flex gap-2">
@@ -561,16 +565,16 @@
                         </div>
                     </div>
 
-                    <div class="w-full lg:w-1/3 bg-slate-800 rounded-xl border border-slate-700 flex flex-col min-h-[350px] shadow-lg overflow-hidden">
+                    <div class="w-full lg:w-1/3 bg-slate-800 rounded-xl border border-slate-700 flex flex-col shadow-lg overflow-hidden">
                         <div class="p-4 md:p-6 border-b border-slate-700 bg-slate-800/80">
                             <h3 class="text-base md:text-lg font-bold text-white mb-1">Detalle del Día</h3>
                             <p class="text-xs md:text-sm text-slate-400" id="selectedDateLabel">Selecciona un día en el calendario</p>
                             
                             <div class="mt-3 md:mt-4 grid grid-cols-2 gap-2 md:gap-3">
-                                <div class="bg-slate-900 rounded-lg p-2 md:p-3 border border-slate-700 text-center cursor-pointer hover:border-emerald-500 transition-colors group" onclick="showBreakdown('POS', window.currentSelectedDayObj)" title="Ver Desglose">
+                                <div class="bg-slate-900 rounded-lg p-2 md:p-3 border border-slate-700 text-center">
                                     <div class="flex justify-center items-center gap-1 mb-1">
                                         <p class="text-[10px] md:text-xs text-slate-400">Ganancia POS</p>
-                                        <i data-lucide="pie-chart" class="w-3 h-3 text-slate-600 group-hover:text-emerald-400"></i>
+                                        <i data-lucide="pie-chart" class="w-3 h-3 text-slate-600"></i>
                                     </div>
                                     <p class="text-base md:text-lg font-bold text-emerald-400" id="selectedDayIngresos">S/ 0.00</p>
                                 </div>
@@ -578,10 +582,10 @@
                                     <p class="text-[10px] md:text-xs text-slate-400 mb-1">Gastos</p>
                                     <p class="text-base md:text-lg font-bold text-red-400" id="selectedDayGastos">S/ 0.00</p>
                                 </div>
-                                <div class="bg-slate-900 rounded-lg p-2 md:p-3 border border-slate-700 text-center cursor-pointer hover:border-white transition-colors group" onclick="showBreakdown('NETA', window.currentSelectedDayObj)" title="Ver Desglose">
+                                <div class="bg-slate-900 rounded-lg p-2 md:p-3 border border-slate-700 text-center">
                                     <div class="flex justify-center items-center gap-1 mb-1">
                                         <p class="text-[10px] md:text-xs text-slate-400">Caja Neta</p>
-                                        <i data-lucide="pie-chart" class="w-3 h-3 text-slate-600 group-hover:text-white"></i>
+                                        <i data-lucide="pie-chart" class="w-3 h-3 text-slate-600"></i>
                                     </div>
                                     <p class="text-base md:text-lg font-bold text-white" id="selectedDayNeto">S/ 0.00</p>
                                 </div>
@@ -679,7 +683,7 @@
             
             <div class="overflow-y-auto no-scrollbar flex-1 mb-5 md:mb-6">
                 <!-- Métodos de pago -->
-                <div class="space-y-2 md:space-y-3">
+                <div id="brkStandardMethods" class="space-y-2 md:space-y-3">
                     <div class="flex justify-between items-center p-3 bg-slate-900 rounded-lg border border-slate-700">
                         <div class="flex items-center gap-2 text-emerald-400">
                             <i data-lucide="banknote" class="w-4 h-4 md:w-5 md:h-5"></i>
@@ -705,7 +709,7 @@
 
                 <!-- Desglose por Categorías -->
                 <div id="brkCategories" class="hidden mt-5 pt-4 border-t border-slate-700">
-                    <h4 class="text-[10px] md:text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">Por Categorías (Ingreso y Ganancia)</h4>
+                    <h4 class="text-[10px] md:text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">Desglose por Categorías</h4>
                     <div id="brkCategoriesList" class="space-y-2">
                         <!-- Categorías inyectadas -->
                     </div>
@@ -902,6 +906,7 @@
         
         window.modalDiscounts = [];
         window.modalPromos = [];
+        window.activeAnaCategories = []; // Para el filtro múltiple de análisis
 
         window.appConfig = { soatMargin: 5, agenteMargin: 1, tarjetaMargin: 5 };
         
@@ -935,7 +940,6 @@
                     measurementId: "G-ZE6YFRW4F6"
                 };
                 
-                // ID DE BASE DE DATOS
                 window.appId = 'raspadillas-pos-definitivo';
 
                 const app = appModule.initializeApp(firebaseConfig);
@@ -1043,12 +1047,32 @@
             const almFilter = document.getElementById('almacenCategoryFilter');
             if(almFilter) almFilter.innerHTML = buildOptions(uniqueCategories, almFilter.value);
             
+            // Píldoras de Análisis
             const anaFilter = document.getElementById('analysisCategoryFilter');
-            if(anaFilter) anaFilter.innerHTML = buildOptions(uniqueCategories, anaFilter.value);
+            if(anaFilter) {
+                let html = `<button onclick="toggleAnaCategory('ALL')" class="${window.activeAnaCategories.length === 0 ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'} px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border border-slate-600">Todas</button>`;
+                uniqueCategories.sort().forEach(c => {
+                    const isActive = window.activeAnaCategories.includes(c);
+                    html += `<button onclick="toggleAnaCategory('${c}')" class="${isActive ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'} px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border border-slate-600">${c}</button>`;
+                });
+                anaFilter.innerHTML = html;
+            }
 
             const datalist = document.getElementById('category-list');
             if (uniqueCategories.length === 0) { uniqueCategories = ['Licor', 'Gaseosa', 'Snack', 'Extras', 'Cigarros']; }
             if(datalist) datalist.innerHTML = uniqueCategories.map(c => `<option value="${c}"></option>`).join('');
+        }
+
+        function toggleAnaCategory(cat) {
+            if (cat === 'ALL') {
+                window.activeAnaCategories = [];
+            } else {
+                const idx = window.activeAnaCategories.indexOf(cat);
+                if (idx > -1) window.activeAnaCategories.splice(idx, 1);
+                else window.activeAnaCategories.push(cat);
+            }
+            updateCategoryFilters();
+            updateAnalysisRange();
         }
 
         // --- NAVEGACIÓN ---
@@ -1105,7 +1129,7 @@
             saveData(); closeConfigModal(); setTimeout(() => { showModal('¡Ajustes Guardados!', `Comisiones y recargos actualizados correctamente.`); }, 300);
         }
 
-        // Centralizada lógica de costo/beneficio
+        // Lógica de costo/beneficio unificada
         function calculateItemProfitAndCost(item) {
             const gross = calculateItemTotal(item);
             const p = item.product;
@@ -1141,7 +1165,8 @@
             document.getElementById('brkTitle').textContent = title; document.getElementById('brkDate').textContent = tDate.toLocaleDateString('es-PE');
             document.getElementById('brkEfectivo').textContent = `S/ ${efe.toFixed(2)}`; document.getElementById('brkYape').textContent = `S/ ${yap.toFixed(2)}`; document.getElementById('brkTarjeta').textContent = `S/ ${tar.toFixed(2)}`;
             
-            // DESGLOSE POR CATEGORÍA
+            document.getElementById('brkStandardMethods').classList.remove('hidden');
+
             if (type === 'POS' || type === 'NETA') {
                 let catData = {};
                 sales.filter(s => s.type === 'POS').forEach(s => {
@@ -1156,16 +1181,16 @@
                 });
                 const catList = document.getElementById('brkCategoriesList');
                 catList.innerHTML = '';
-                const catKeys = Object.keys(catData);
+                const catKeys = Object.keys(catData).sort((a,b) => catData[b].profit - catData[a].profit);
                 if(catKeys.length > 0) {
                     document.getElementById('brkCategories').classList.remove('hidden');
                     catKeys.forEach(k => {
                         catList.insertAdjacentHTML('beforeend', `
-                            <div class="flex justify-between items-center bg-slate-900 p-2 rounded border border-slate-700">
-                                <span class="text-[10px] md:text-xs text-slate-300 font-medium">${k}</span>
+                            <div class="flex justify-between items-center bg-slate-900 p-2.5 rounded border border-slate-700">
+                                <span class="text-xs text-slate-300 font-medium flex items-center gap-1.5"><i data-lucide="${getCategoryIcon(k)}" class="w-3 h-3"></i> ${k}</span>
                                 <div class="text-right flex flex-col items-end">
-                                    <span class="block text-xs md:text-sm font-bold text-white">S/ ${catData[k].gross.toFixed(2)}</span>
-                                    <span class="block text-[8px] md:text-[10px] text-emerald-400 font-medium">Ganancia Pura: S/ ${catData[k].profit.toFixed(2)}</span>
+                                    <span class="block text-sm font-bold text-white">S/ ${catData[k].gross.toFixed(2)}</span>
+                                    <span class="block text-[9px] text-emerald-400 font-medium">Ganancia: S/ ${catData[k].profit.toFixed(2)}</span>
                                 </div>
                             </div>
                         `);
@@ -1178,8 +1203,8 @@
         }
         function closeBreakdownModal() { const modal = document.getElementById('breakdownModal'); modal.classList.add('opacity-0'); modal.children[0].classList.remove('scale-100'); modal.children[0].classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); }, 300); }
 
-        function getCategoryColor(category) { const c = (category || '').toLowerCase(); if (c.includes('licor') || c.includes('cervez') || c.includes('ron')) return 'bg-amber-700/20 text-amber-500'; if (c.includes('gaseosa') || c.includes('agua')) return 'bg-red-700/20 text-red-500'; if (c.includes('snack') || c.includes('comestible') || c.includes('chicle')) return 'bg-orange-600/20 text-orange-500'; if (c.includes('extra') || c.includes('hielo') || c.includes('cigarro')) return 'bg-cyan-700/20 text-cyan-500'; return 'bg-slate-700/20 text-slate-500'; }
-        function getCategoryIcon(category) { const c = (category || '').toLowerCase(); if (c.includes('licor') || c.includes('cervez') || c.includes('ron')) return 'wine'; if (c.includes('gaseosa') || c.includes('agua')) return 'glass-water'; if (c.includes('snack') || c.includes('comestible') || c.includes('chicle')) return 'cookie'; if (c.includes('extra') || c.includes('hielo') || c.includes('cigarro')) return 'snowflake'; return 'package'; }
+        function getCategoryColor(category) { const c = (category || '').toLowerCase(); if (c.includes('licor') || c.includes('cervez') || c.includes('ron')) return 'bg-amber-700/20 text-amber-500'; if (c.includes('gaseosa') || c.includes('agua') || c.includes('helado')) return 'bg-red-700/20 text-red-500'; if (c.includes('snack') || c.includes('comestible') || c.includes('chicle')) return 'bg-orange-600/20 text-orange-500'; if (c.includes('extra') || c.includes('hielo') || c.includes('cigarro')) return 'bg-cyan-700/20 text-cyan-500'; return 'bg-slate-700/20 text-slate-500'; }
+        function getCategoryIcon(category) { const c = (category || '').toLowerCase(); if (c.includes('licor') || c.includes('cervez') || c.includes('ron')) return 'wine'; if (c.includes('gaseosa') || c.includes('agua') || c.includes('helado')) return 'glass-water'; if (c.includes('snack') || c.includes('comestible') || c.includes('chicle')) return 'cookie'; if (c.includes('extra') || c.includes('hielo') || c.includes('cigarro')) return 'snowflake'; return 'package'; }
 
         // --- ALMACÉN Y PRODUCTOS AVANZADOS ---
         function toggleAdvancedSales() {
@@ -1247,6 +1272,11 @@
             window.editingProductId = id; const title = document.getElementById('modalTitle');
             document.getElementById('advancedSalesSection').classList.add('hidden'); document.getElementById('advArrow').classList.remove('rotate-180');
             
+            const datalist = document.getElementById('category-list');
+            let uniqueCategories = [...new Set(window.inventory.map(p => p.category).filter(Boolean))];
+            if (uniqueCategories.length === 0) { uniqueCategories = ['Licor', 'Gaseosa', 'Snack', 'Extras', 'Cigarros']; }
+            datalist.innerHTML = uniqueCategories.map(c => `<option value="${c}"></option>`).join('');
+
             if (id) {
                 const p = window.inventory.find(x => x.id == id);
                 document.getElementById('p_name').value = p?.name||''; document.getElementById('p_size').value = p?.size||''; document.getElementById('p_category').value = p?.category||'';
@@ -1661,7 +1691,6 @@
         function renderCaja() {
             const hoy = new Date().toDateString(); const ventasHoy = window.salesHistory.filter(s => s.date?.toDateString() === hoy);
             
-            // Cálculos
             const totalPosBruto = ventasHoy.filter(s => s.type === 'POS').reduce((sum, s) => sum + s.total, 0); 
             const totalPosProfit = ventasHoy.filter(s => s.type === 'POS').reduce((sum, s) => sum + (s.profit !== undefined ? s.profit : s.total), 0);
             const totalSoatProfit = ventasHoy.filter(s => s.type === 'SOAT').reduce((sum, s) => sum + (s.profit || 0), 0); 
@@ -1672,7 +1701,6 @@
             const totalCajaFisica = totalPosBruto + totalSoatProfit + totalAgenteProfit - totalEgresos;
             const totalGananciaNeta = totalPosProfit + totalSoatProfit + totalAgenteProfit - totalEgresos;
 
-            // UI
             document.getElementById('caja-ingresos-pos').innerHTML = `S/ ${totalPosBruto.toFixed(2)}<span class="block text-[10px] text-slate-400 font-normal mt-0.5">Ganancia: S/ ${totalPosProfit.toFixed(2)}</span>`; 
             document.getElementById('caja-ingresos-soat').textContent = `S/ ${totalSoatProfit.toFixed(2)}`; 
             document.getElementById('caja-ingresos-agente').textContent = `S/ ${totalAgenteProfit.toFixed(2)}`; 
@@ -1700,7 +1728,6 @@
         function updateAnalysisRange() {
             const startDateStr = document.getElementById('filterStartDate').value;
             const endDateStr = document.getElementById('filterEndDate').value;
-            const cat = document.getElementById('analysisCategoryFilter').value;
 
             if (!startDateStr || !endDateStr) return;
             
@@ -1712,12 +1739,13 @@
 
             let totalIngresos = 0; let totalGanancia = 0; let totalGastos = 0;
 
-            if (cat) {
+            if (window.activeAnaCategories && window.activeAnaCategories.length > 0) {
+                // Cálculo filtrado
                 rangeSales.filter(s => s.type === 'POS').forEach(sale => {
                     if(!sale.items) return;
                     sale.items.forEach(item => {
                         const itemCat = item.product.category || 'Otros';
-                        if (itemCat === cat) {
+                        if (window.activeAnaCategories.includes(itemCat)) {
                             const stats = calculateItemProfitAndCost(item);
                             totalIngresos += stats.gross;
                             totalGanancia += stats.profit;
@@ -1725,6 +1753,7 @@
                     });
                 });
             } else {
+                // Cálculo general
                 rangeSales.forEach(s => {
                     totalIngresos += s.total;
                     totalGanancia += (s.profit !== undefined ? s.profit : s.total);
@@ -1733,50 +1762,151 @@
             }
 
             const netTotal = totalGanancia - totalGastos;
+            const isFiltered = window.activeAnaCategories && window.activeAnaCategories.length > 0;
 
             document.getElementById('analysisRangeSummary').innerHTML = `
-                <div class="bg-slate-900 p-2 md:p-3 rounded-lg border border-slate-700 text-center md:text-left">
-                    <p class="text-[9px] md:text-[10px] text-slate-400 uppercase tracking-wider">Ingresos (Bruto)</p>
-                    <p class="text-sm md:text-base font-bold text-white">S/ ${totalIngresos.toFixed(2)}</p>
+                <div onclick="showRangeBreakdown('BRUTO')" class="bg-slate-900 p-2 md:p-3 rounded-lg border border-slate-700 text-center md:text-left cursor-pointer hover:border-emerald-500 transition-colors group" title="Ver desglose por categorías">
+                    <p class="text-[9px] md:text-[10px] text-slate-400 uppercase tracking-wider flex justify-center md:justify-start items-center gap-1">Ingresos Brutos <i data-lucide="pie-chart" class="w-3 h-3 group-hover:text-emerald-400 transition-colors"></i></p>
+                    <p class="text-sm md:text-base font-bold text-white group-hover:text-emerald-400 transition-colors">S/ ${totalIngresos.toFixed(2)}</p>
                 </div>
-                <div class="bg-slate-900 p-2 md:p-3 rounded-lg border border-slate-700 text-center md:text-left">
-                    <p class="text-[9px] md:text-[10px] text-emerald-400/80 uppercase tracking-wider">Ganancia Pura</p>
+                <div onclick="showRangeBreakdown('GANANCIA')" class="bg-slate-900 p-2 md:p-3 rounded-lg border border-slate-700 text-center md:text-left cursor-pointer hover:border-emerald-500 transition-colors group" title="Ver desglose por categorías">
+                    <p class="text-[9px] md:text-[10px] text-emerald-400/80 uppercase tracking-wider flex justify-center md:justify-start items-center gap-1">Ganancia Pura <i data-lucide="pie-chart" class="w-3 h-3 group-hover:text-emerald-400 transition-colors"></i></p>
                     <p class="text-sm md:text-base font-bold text-emerald-400">S/ ${totalGanancia.toFixed(2)}</p>
                 </div>
-                <div class="bg-slate-900 p-2 md:p-3 rounded-lg border border-slate-700 text-center md:text-left ${cat ? 'opacity-30' : ''}">
-                    <p class="text-[9px] md:text-[10px] text-red-400/80 uppercase tracking-wider">Gastos Grales.</p>
+                <div onclick="showRangeBreakdown('GASTOS')" class="bg-slate-900 p-2 md:p-3 rounded-lg border border-slate-700 text-center md:text-left ${isFiltered ? 'opacity-30 pointer-events-none' : 'cursor-pointer hover:border-red-500 transition-colors group'}" title="Ver desglose de gastos">
+                    <p class="text-[9px] md:text-[10px] text-red-400/80 uppercase tracking-wider flex justify-center md:justify-start items-center gap-1">Gastos Grales. <i data-lucide="pie-chart" class="w-3 h-3 group-hover:text-red-400 transition-colors"></i></p>
                     <p class="text-sm md:text-base font-bold text-red-400">S/ ${totalGastos.toFixed(2)}</p>
                 </div>
-                <div class="bg-slate-900 p-2 md:p-3 rounded-lg border border-indigo-500/50 text-center md:text-left shadow-lg shadow-indigo-500/10">
-                    <p class="text-[9px] md:text-[10px] text-indigo-300 uppercase tracking-wider">Neto del Periodo</p>
-                    <p class="text-base md:text-lg font-bold text-indigo-400">S/ ${netTotal.toFixed(2)}</p>
+                <div onclick="showRangeBreakdown('NETO')" class="bg-slate-900 p-2 md:p-3 rounded-lg border border-indigo-500/50 text-center md:text-left shadow-lg shadow-indigo-500/10 cursor-pointer hover:border-indigo-400 transition-colors group" title="Ver desglose final">
+                    <p class="text-[9px] md:text-[10px] text-indigo-300 uppercase tracking-wider flex justify-center md:justify-start items-center gap-1">Neto del Periodo <i data-lucide="pie-chart" class="w-3 h-3 group-hover:text-white transition-colors"></i></p>
+                    <p class="text-base md:text-lg font-bold text-indigo-400 group-hover:text-white transition-colors">S/ ${netTotal.toFixed(2)}</p>
                 </div>
             `;
             
-            // Actualizar calendario visualmente
+            // Refrescar calendario para coincidir con la fecha de inicio del filtro sin generar bucles
             window.currentCalDate = new Date(start);
             renderAnalysis();
         }
 
         function setAnalysisRange(period) {
-            const today = new Date();
-            let start = new Date(today);
-            let end = new Date(today);
+            const end = new Date();
+            let start = new Date();
 
             if (period === 'hoy') {
-                // hoy
+                // start is today
             } else if (period === 'semana') {
-                const day = today.getDay() || 7; 
-                if(day !== 1) start.setHours(-24 * (day - 1)); 
+                start.setDate(end.getDate() - 6); 
             } else if (period === 'mes') {
-                start = new Date(today.getFullYear(), today.getMonth(), 1);
+                start.setDate(end.getDate() - 29); 
             } else if (period === 'año') {
-                start = new Date(today.getFullYear(), 0, 1);
+                start.setDate(end.getDate() - 364);
             }
 
             document.getElementById('filterStartDate').value = start.toISOString().split('T')[0];
             document.getElementById('filterEndDate').value = end.toISOString().split('T')[0];
             updateAnalysisRange();
+        }
+
+        // LÓGICA DE DESGLOSE DEL PANEL SUPERIOR DE ANÁLISIS
+        function showRangeBreakdown(type) {
+            const startDateStr = document.getElementById('filterStartDate').value;
+            const endDateStr = document.getElementById('filterEndDate').value;
+            if (!startDateStr || !endDateStr) return;
+            
+            const start = new Date(startDateStr + 'T00:00:00');
+            const end = new Date(endDateStr + 'T23:59:59');
+
+            let rangeSales = window.salesHistory.filter(s => { const d = new Date(s.date); return d >= start && d <= end; });
+            let rangeGastos = window.gastosHistory.filter(g => { const d = new Date(g.date); return d >= start && d <= end; });
+
+            let catData = {};
+            let totalGeneral = 0;
+            let modalTitle = "";
+
+            if (type === 'BRUTO' || type === 'GANANCIA' || type === 'NETO') {
+                modalTitle = type === 'BRUTO' ? "Desglose de Ingresos (Bruto)" : (type === 'GANANCIA' ? "Desglose de Ganancia Pura" : "Desglose Neto del Periodo");
+                
+                rangeSales.filter(s => s.type === 'POS').forEach(sale => {
+                    if(!sale.items) return;
+                    sale.items.forEach(item => {
+                        const itemCat = item.product.category || 'Otros';
+                        if (window.activeAnaCategories.length === 0 || window.activeAnaCategories.includes(itemCat)) {
+                            const stats = calculateItemProfitAndCost(item);
+                            if(!catData[itemCat]) catData[itemCat] = { val: 0 };
+                            
+                            const valToAdd = type === 'BRUTO' ? stats.gross : stats.profit;
+                            catData[itemCat].val += valToAdd;
+                            totalGeneral += valToAdd;
+                        }
+                    });
+                });
+
+                if (window.activeAnaCategories.length === 0) {
+                    rangeSales.filter(s => s.type === 'SOAT').forEach(sale => {
+                        if(!catData['SOAT']) catData['SOAT'] = { val: 0 };
+                        const valToAdd = type === 'BRUTO' ? sale.total : (sale.profit || 0);
+                        catData['SOAT'].val += valToAdd;
+                        totalGeneral += valToAdd;
+                    });
+                    rangeSales.filter(s => s.type === 'AGENTE').forEach(sale => {
+                        if(!catData['AGENTE BANCARIO']) catData['AGENTE BANCARIO'] = { val: 0 };
+                        const valToAdd = type === 'BRUTO' ? sale.total : (sale.profit || 0);
+                        catData['AGENTE BANCARIO'].val += valToAdd;
+                        totalGeneral += valToAdd;
+                    });
+                }
+            }
+
+            if (type === 'GASTOS' || type === 'NETO') {
+                if (type === 'GASTOS') modalTitle = "Desglose de Gastos Generales";
+                if (window.activeAnaCategories.length === 0) {
+                    rangeGastos.forEach(g => {
+                        if(!catData['GASTOS (EGRESOS)']) catData['GASTOS (EGRESOS)'] = { val: 0, isNegative: true };
+                        catData['GASTOS (EGRESOS)'].val += g.monto;
+                        if(type === 'GASTOS') totalGeneral += g.monto;
+                        if(type === 'NETO') totalGeneral -= g.monto; 
+                    });
+                }
+            }
+
+            document.getElementById('brkTitle').textContent = modalTitle;
+            document.getElementById('brkDate').textContent = `${start.toLocaleDateString('es-PE')} - ${end.toLocaleDateString('es-PE')}`;
+            
+            // Ocultar métodos de pago estándar para esta vista de categorías
+            document.getElementById('brkStandardMethods').classList.add('hidden');
+            
+            const catList = document.getElementById('brkCategoriesList');
+            catList.innerHTML = '';
+            document.getElementById('brkCategories').classList.remove('hidden');
+            
+            const catKeys = Object.keys(catData).sort((a,b) => catData[b].val - catData[a].val);
+            
+            if(catKeys.length > 0) {
+                catKeys.forEach(k => {
+                    const isNeg = catData[k].isNegative;
+                    const valStr = `S/ ${catData[k].val.toFixed(2)}`;
+                    catList.insertAdjacentHTML('beforeend', `
+                        <div class="flex justify-between items-center bg-slate-900 p-2.5 rounded border border-slate-700">
+                            <span class="text-xs text-slate-300 font-medium flex items-center gap-1.5"><i data-lucide="${isNeg ? 'trending-down' : getCategoryIcon(k)}" class="w-3 h-3 ${isNeg ? 'text-red-400' : ''}"></i> ${k}</span>
+                            <span class="text-sm font-bold ${isNeg ? 'text-red-400' : 'text-emerald-400'}">${isNeg ? '-' : ''}${valStr}</span>
+                        </div>
+                    `);
+                });
+            } else {
+                catList.innerHTML = `<div class="text-center text-slate-500 py-4 text-sm">No hay datos en este periodo.</div>`;
+            }
+            
+            catList.insertAdjacentHTML('beforeend', `
+                <div class="flex justify-between items-center bg-slate-800 p-3 rounded border-t-2 border-slate-600 mt-2">
+                    <span class="text-sm text-white font-bold">TOTAL PERIODO</span>
+                    <span class="text-lg font-bold ${totalGeneral >= 0 ? 'text-emerald-400' : 'text-red-400'}">S/ ${totalGeneral.toFixed(2)}</span>
+                </div>
+            `);
+
+            const modal = document.getElementById('breakdownModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('opacity-0'); modal.children[0].classList.remove('scale-95'); modal.children[0].classList.add('scale-100'); }, 10);
+            updateIcons();
         }
 
         function changeMonth(delta) { window.currentCalDate.setMonth(window.currentCalDate.getMonth() + delta); renderAnalysis(); }
@@ -1794,7 +1924,6 @@
             for (let i = 0; i < firstDay; i++) { grid.insertAdjacentHTML('beforeend', `<div class="p-1 md:p-2 border border-slate-800/50 rounded-lg bg-slate-900/30"></div>`); }
             const hoyStr = new Date().toDateString();
             
-            // Para el sombreado del rango
             const fStart = new Date(document.getElementById('filterStartDate').value + 'T00:00:00');
             const fEnd = new Date(document.getElementById('filterEndDate').value + 'T23:59:59');
 
@@ -1806,9 +1935,11 @@
                 const daySales = monthSales.filter(s => s.date.getDate() === day); const dayGastosArr = monthGastos.filter(g => g.date.getDate() === day);
                 let classes = ''; if(daySales.length > 0) classes += ' has-sales'; if(dayGastosArr.length > 0) classes += ' has-gastos'; 
                 if (isSelected) { classes += ' ring-2 ring-indigo-500'; }
-                else if (inRange) { classes += ' bg-indigo-900/20 border-indigo-500/30'; }
+                else if (inRange) { classes += ' bg-indigo-900/30 border-indigo-500/30'; }
                 
-                const div = document.createElement('div'); div.className = `calendar-day p-1 md:p-2 h-10 sm:h-14 lg:h-20 border border-slate-700/50 rounded-lg flex flex-col cursor-pointer transition-colors ${isToday ? 'bg-indigo-900/40 border-indigo-500' : 'bg-slate-800 hover:bg-slate-700'} ${classes}`; div.onclick = () => showDayDetails(dayDate, daySales, dayGastosArr);
+                const div = document.createElement('div'); div.className = `calendar-day p-1 md:p-2 h-10 sm:h-14 lg:h-20 border border-slate-700/50 rounded-lg flex flex-col cursor-pointer transition-colors ${isToday ? 'bg-indigo-900/60 border-indigo-500' : 'bg-slate-800 hover:bg-slate-700'} ${classes}`; 
+                div.onclick = function() { showDayDetails(dayDate, daySales, dayGastosArr, this); };
+                
                 let htmlInner = `<span class="text-xs md:text-sm font-bold ${isToday ? 'text-indigo-400' : 'text-slate-300'}">${day}</span>`;
                 if(daySales.length > 0 || dayGastosArr.length > 0) { const dayTotal = daySales.reduce((sum, s) => sum + (s.profit !== undefined ? s.profit : s.total), 0) - dayGastosArr.reduce((sum, g) => sum + g.monto, 0); htmlInner += `<span class="text-[8px] md:text-[10px] ${dayTotal >= 0 ? 'text-emerald-500' : 'text-red-400'} font-medium mt-auto hidden lg:block">S/ ${dayTotal.toFixed(0)}</span>`; }
                 div.innerHTML = htmlInner; grid.appendChild(div);
@@ -1816,22 +1947,19 @@
             if (window.currentSelectedDayObj) { const sSales = window.salesHistory.filter(s => isValidDate(s.date) && s.date.toDateString() === window.currentSelectedDayObj.toDateString()); const sGastos = window.gastosHistory.filter(g => isValidDate(g.date) && g.date.toDateString() === window.currentSelectedDayObj.toDateString()); showDayDetails(window.currentSelectedDayObj, sSales, sGastos); }
         }
 
-        function showDayDetails(dateObj, daySales, dayGastosArr) {
+        // REPARADO: Ya no llama a renderAnalysis recursivamente, solucionando el colapso del sistema
+        function showDayDetails(dateObj, daySales, dayGastosArr, cellElement = null) {
             window.currentSelectedDayObj = dateObj; document.getElementById('selectedDateLabel').textContent = dateObj.toLocaleDateString('es-PE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            document.querySelectorAll('.calendar-day').forEach(el => el.classList.remove('ring-2', 'ring-indigo-500'));
             
-            // Highlight this specific day in the calendar visual
-            const cells = document.querySelectorAll('.calendar-day');
-            if(cells.length > dateObj.getDate() - 1) { // rough approximation
-               renderAnalysis(); // Re-render to strictly update classes based on currentSelectedDayObj
-            }
-
+            document.querySelectorAll('.calendar-day').forEach(el => el.classList.remove('ring-2', 'ring-indigo-500'));
+            if(cellElement) cellElement.classList.add('ring-2', 'ring-indigo-500');
+            
             const totalIngresos = daySales.reduce((sum, s) => sum + (s.profit !== undefined ? s.profit : s.total), 0); const totalGastos = dayGastosArr.reduce((sum, g) => sum + g.monto, 0); const totalNeto = totalIngresos - totalGastos;
             
             document.getElementById('selectedDayIngresos').textContent = `S/ ${totalIngresos.toFixed(2)}`; document.getElementById('selectedDayGastos').textContent = `S/ ${totalGastos.toFixed(2)}`; document.getElementById('selectedDayNeto').textContent = `S/ ${totalNeto.toFixed(2)}`; document.getElementById('selectedDayCount').textContent = daySales.length + dayGastosArr.length;
             const list = document.getElementById('selectedDayTransactions'); list.innerHTML = '';
             
-            if (daySales.length === 0 && dayGastosArr.length === 0) { list.innerHTML = `<div class="h-full flex items-center justify-center text-slate-500 text-xs md:text-sm text-center">Sin transacciones.</div>`; return; }
+            if (daySales.length === 0 && dayGastosArr.length === 0) { list.innerHTML = `<div class="h-full flex items-center justify-center text-slate-500 text-xs md:text-sm text-center">Sin transacciones registradas.</div>`; return; }
             const allTransactions = [...daySales.map(s => ({ ...s, isGasto: false })), ...dayGastosArr.map(g => ({ ...g, isGasto: true, type: 'GASTO' }))].sort((a, b) => b.date - a.date); 
             
             allTransactions.forEach(t => {
@@ -2032,7 +2160,7 @@
                 }
             };
             reader.readAsText(file);
-            event.target.value = ''; // Resetea el input por si quieres subir el mismo archivo después
+            event.target.value = ''; 
         }
 
         // --- EXPOSICIÓN GLOBAL PARA HTML ---
@@ -2040,7 +2168,7 @@
         window.toggleAdvancedSales = toggleAdvancedSales; window.toggleGroupInputs = toggleGroupInputs; window.addQtyDiscount = addQtyDiscount; window.updateMDiscount = updateMDiscount; window.removeQtyDiscount = removeQtyDiscount; window.addPromoRow = addPromoRow; window.updateMPromo = updateMPromo; window.removePromoRow = removePromoRow; window.addPromoItem = addPromoItem; window.updateMPromoItem = updateMPromoItem; window.removePromoItem = removePromoItem;
         
         window.exportBackup = exportBackup; window.triggerImport = triggerImport; window.handleImportBackup = handleImportBackup;
-        window.updateAnalysisRange = updateAnalysisRange; window.setAnalysisRange = setAnalysisRange;
+        window.updateAnalysisRange = updateAnalysisRange; window.setAnalysisRange = setAnalysisRange; window.toggleAnaCategory = toggleAnaCategory; window.showRangeBreakdown = showRangeBreakdown;
 
         // Renderizado inicial sin bloqueos
         document.addEventListener("DOMContentLoaded", () => {
