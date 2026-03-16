@@ -289,6 +289,9 @@
                         <input type="text" id="almacenSearchInput" oninput="renderAlmacen()" placeholder="Buscar en almacén..." 
                                class="w-full bg-slate-800 text-sm text-white placeholder-slate-400 border border-slate-700 rounded-lg pl-9 pr-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
                     </div>
+                    <button onclick="openIngresoStockModal()" class="w-full sm:w-auto px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors shadow-lg shadow-emerald-500/20">
+                        <i data-lucide="truck" class="w-5 h-5"></i> Ingreso Stock
+                    </button>
                     <button onclick="openAddProductModal()" class="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors shadow-lg shadow-indigo-500/20">
                         <i data-lucide="plus" class="w-5 h-5"></i> Añadir Producto
                     </button>
@@ -627,6 +630,11 @@
                                 <button onclick="setAnalysisRange('semana')" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded text-[10px] font-medium transition-colors">7 Días</button>
                                 <button onclick="setAnalysisRange('mes')" class="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded text-[10px] font-medium transition-colors">30 Días</button>
                             </div>
+                            <div class="flex items-center gap-1.5 border-l border-slate-700 pl-3">
+                                <button onclick="forceSyncHistory()" id="btnSyncHistory" class="px-2 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded text-[10px] font-bold transition-colors flex items-center gap-1 shadow-lg shadow-indigo-500/20" title="Forzar actualización del historial desde la nube">
+                                    <i data-lucide="refresh-cw" id="iconSyncHistory" class="w-3 h-3"></i> Sync
+                                </button>
+                            </div>
                         </div>
                         <div class="flex items-center gap-2">
                             <label class="text-[10px] text-slate-400 uppercase font-bold">Filtro:</label>
@@ -890,6 +898,39 @@
         </div>
     </div>
 
+    <!-- Modal: Ingreso de Stock y Gasto -->
+    <div id="ingresoStockModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center px-4 py-4">
+        <div class="bg-slate-800 rounded-2xl w-full max-w-3xl border border-slate-700 shadow-2xl flex flex-col overflow-hidden max-h-full">
+            <header class="p-4 md:p-5 border-b border-slate-700 flex justify-between items-center bg-slate-800 flex-shrink-0">
+                <h3 class="text-base md:text-lg font-bold text-white flex items-center gap-2"><i data-lucide="truck" class="w-5 h-5 text-emerald-400"></i> Ingreso de Mercadería (Compra)</h3>
+                <button onclick="closeIngresoStockModal()" class="text-slate-400 hover:text-white transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </header>
+            
+            <div class="p-4 md:p-5 overflow-y-auto flex-1 custom-scrollbar">
+                <p class="text-xs md:text-sm text-slate-400 mb-4">Añade productos para actualizar su stock. El gasto se calculará y registrará en caja automáticamente (puedes editar el costo libremente si difiere del precio costo configurado).</p>
+                
+                <div class="space-y-3 mb-4" id="ingresoRowsContainer">
+                    <!-- Filas inyectadas por JS -->
+                </div>
+                
+                <button onclick="addIngresoRow()" class="w-full py-2.5 border-2 border-dashed border-slate-600 rounded-xl text-emerald-400 hover:bg-slate-700 hover:border-emerald-500 transition-colors text-sm font-bold flex items-center justify-center gap-2">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Añadir fila de producto
+                </button>
+            </div>
+            
+            <footer class="p-4 md:p-5 border-t border-slate-700 bg-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4 flex-shrink-0">
+                <div class="w-full sm:w-auto text-left">
+                    <p class="text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">Total a Registrar como Gasto</p>
+                    <p class="text-xl md:text-2xl font-bold text-red-400" id="ingresoTotalCost">S/ 0.00</p>
+                </div>
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <button onclick="closeIngresoStockModal()" class="flex-1 sm:flex-none px-4 py-2.5 text-sm md:text-base rounded-lg font-medium text-slate-300 hover:bg-slate-700 transition-colors">Cancelar</button>
+                    <button onclick="processIngresoStock()" class="flex-1 sm:flex-none px-4 py-2.5 text-sm md:text-base rounded-lg font-bold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"><i data-lucide="check-circle" class="w-4 h-4"></i> Procesar Ingreso</button>
+                </div>
+            </footer>
+        </div>
+    </div>
+
     <!-- Modal: Añadir/Editar Producto -->
     <div id="addProductModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center px-4 py-4">
         <div class="bg-slate-800 rounded-2xl w-full max-w-lg border border-slate-700 shadow-2xl flex flex-col overflow-hidden max-h-full">
@@ -907,37 +948,38 @@
                     <div class="grid grid-cols-2 gap-3 md:gap-4">
                         <div>
                             <label class="block text-xs md:text-sm font-medium text-slate-300 mb-1">Tamaño / Detalles</label>
-                            <input type="text" id="p_size" required placeholder="Ej: 750ml" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500">
+                            <input type="text" id="p_size" placeholder="Ej: 750ml (Opcional)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500">
                         </div>
                         <div>
                             <label class="block text-xs md:text-sm font-medium text-slate-300 mb-1">Stock Físico</label>
-                            <input type="number" id="p_stock" required min="0" placeholder="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500">
+                            <input type="number" id="p_stock" min="0" placeholder="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3 md:gap-4">
                         <div>
                             <label class="block text-xs md:text-sm font-medium text-slate-300 mb-1">Categoría</label>
-                            <input type="text" id="p_category" list="category-list" required placeholder="Escriba o seleccione..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500">
+                            <input type="text" id="p_category" list="category-list" placeholder="Escriba o seleccione..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500">
                             <datalist id="category-list"></datalist>
                         </div>
                         <div>
                             <label class="block text-xs md:text-sm font-medium text-slate-300 mb-1">Familia (Mix&Match)</label>
-                            <input type="text" id="p_family" placeholder="Ej: Pisco, Cigarro..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500" title="Agrupa productos para promos por cantidad sin importar el sabor">
+                            <input type="text" id="p_family" list="family-list" placeholder="Ej: Pisco, Cigarro..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500" title="Agrupa productos para promos por cantidad sin importar el sabor">
+                            <datalist id="family-list"></datalist>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3 md:gap-4">
                         <div>
                             <label class="block text-xs md:text-sm font-medium text-slate-300 mb-1">Precio de Costo (S/)</label>
-                            <input type="number" id="p_cost" required min="0" step="0.01" placeholder="0.00" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500">
+                            <input type="number" id="p_cost" min="0" step="0.01" placeholder="0.00" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500">
                         </div>
                         <div>
                             <label class="block text-xs md:text-sm font-medium text-slate-300 mb-1">Precio Venta (S/)</label>
-                            <input type="number" id="p_price" required min="0" step="0.10" placeholder="0.00" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500">
+                            <input type="number" id="p_price" min="0" step="0.10" placeholder="0.00" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500">
                         </div>
                     </div>
                     <div>
                         <label class="block text-xs md:text-sm font-medium text-slate-300 mb-1">Aviso Poco Stock</label>
-                        <input type="number" id="p_minstock" required min="0" placeholder="5" value="5" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500">
+                        <input type="number" id="p_minstock" min="0" placeholder="5" value="5" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white focus:outline-none focus:border-indigo-500">
                     </div>
 
                     <div class="mt-3 bg-slate-800/50 p-3 rounded-lg border border-slate-700">
@@ -1111,7 +1153,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT PRINCIPAL (ACTUALIZADO A COLECCIONES Y ACTUALIZACIÓN DIFERENCIAL) -->
+    <!-- SCRIPT PRINCIPAL -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -1227,73 +1269,104 @@
         function setupRealtimeListeners() {
             if (!window.db || !window.userId) return;
 
-            const watchCollection = (col, callback) => {
+            // ACTUALIZACIÓN TIPO DIFF: Escuchar solo los cambios en vez de descargar y reemplazar todo
+            const watchCollection = (col, targetArrayName, callback, dateFields = []) => {
                 const ref = window.fs.collection(window.db, 'artifacts', window.appId, 'public', 'data', col);
-                window.fs.onSnapshot(ref, (querySnapshot) => {
-                    const items = [];
-                    querySnapshot.forEach(doc => items.push(doc.data()));
-                    callback(items);
-                    cacheLocally(); // Actualiza el caché ante cualquier cambio de la nube
+                window.fs.onSnapshot(ref, (snapshot) => {
+                    let hasChanges = false;
+                    snapshot.docChanges().forEach((change) => {
+                        hasChanges = true;
+                        let docData = change.doc.data();
+                        
+                        // Parsear fechas si es necesario
+                        dateFields.forEach(f => { if(docData[f]) docData[f] = safeDateParse(docData[f]); });
+                        
+                        // Buscar si ya existe en local por ID o Nombre
+                        const idx = window[targetArrayName].findIndex(x => String(x.id) === String(docData.id) || (docData.name && String(x.name) === String(docData.name)));
+                        
+                        if (change.type === "added" || change.type === "modified") {
+                            if (idx > -1) window[targetArrayName][idx] = { ...window[targetArrayName][idx], ...docData };
+                            else window[targetArrayName].push(docData);
+                        }
+                        if (change.type === "removed") {
+                            if (idx > -1) window[targetArrayName].splice(idx, 1);
+                        }
+                    });
+                    
+                    if (hasChanges) {
+                        callback();
+                        cacheLocally(); // Solo actualiza cache si hay cambios reales en la nube
+                    }
                 }, (error) => console.error("Error escuchando", col, error));
             };
 
-            const watchTodayCollection = (col, callback) => {
+            const watchTodayCollection = (col, targetArrayName, callback) => {
                 const todayStart = getBusinessDate(new Date()).getTime();
                 const ref = window.fs.collection(window.db, 'artifacts', window.appId, 'public', 'data', col);
                 const q = window.fs.query(ref, window.fs.where('date', '>=', todayStart));
                 
-                window.fs.onSnapshot(q, (querySnapshot) => {
-                    const items = [];
-                    querySnapshot.forEach(doc => items.push(doc.data()));
-                    callback(items);
-                    cacheLocally();
+                window.fs.onSnapshot(q, (snapshot) => {
+                    let hasChanges = false;
+                    snapshot.docChanges().forEach((change) => {
+                        hasChanges = true;
+                        let docData = change.doc.data();
+                        if(docData.date) docData.date = safeDateParse(docData.date);
+                        
+                        const idx = window[targetArrayName].findIndex(x => String(x.id) === String(docData.id));
+                        
+                        if (change.type === "added" || change.type === "modified") {
+                            if (idx > -1) window[targetArrayName][idx] = { ...window[targetArrayName][idx], ...docData };
+                            else window[targetArrayName].push(docData);
+                        }
+                        if (change.type === "removed") {
+                            if (idx > -1) window[targetArrayName].splice(idx, 1);
+                        }
+                    });
+                    
+                    if (hasChanges) {
+                        callback();
+                        cacheLocally();
+                    }
                 }, (error) => console.error("Error escuchando hoy en", col, error));
             };
 
-            watchCollection('pos_inventory', (data) => { 
-                window.inventory = data; 
+            // Implementación de los escuchadores con carga diferencial (Fusión en vivo con caché local)
+            watchCollection('pos_inventory', 'inventory', () => { 
                 updateCategoryFilters(); 
                 renderActiveViewOnly(); 
             });
             
-            // CARGA LIGERA: Solo escucha las ventas de HOY en tiempo real
-            watchTodayCollection('pos_sales', (data) => { 
-                const todayStart = getBusinessDate(new Date()).getTime();
-                // Mantiene el historial antiguo en memoria, y solo reemplaza lo de hoy con la data en tiempo real
-                const merged = [...window.salesHistory.filter(s => getBusinessDate(s.date).getTime() < todayStart)];
-                data.forEach(d => merged.push({...d, date: safeDateParse(d.date)}));
-                window.salesHistory = merged;
+            watchTodayCollection('pos_sales', 'salesHistory', () => { 
                 renderActiveViewOnly(); 
             });
             
-            // CARGA LIGERA: Solo escucha los gastos de HOY en tiempo real
-            watchTodayCollection('pos_gastos', (data) => { 
-                const todayStart = getBusinessDate(new Date()).getTime();
-                const merged = [...window.gastosHistory.filter(g => getBusinessDate(g.date).getTime() < todayStart)];
-                data.forEach(d => merged.push({...d, date: safeDateParse(d.date)}));
-                window.gastosHistory = merged;
+            watchTodayCollection('pos_gastos', 'gastosHistory', () => { 
                 renderActiveViewOnly(); 
             });
             
-            watchCollection('pos_fiados', (data) => { 
-                window.fiados = data.map(f => ({...f, date: safeDateParse(f.date), paidDate: f.paidDate ? safeDateParse(f.paidDate) : null})); 
+            watchCollection('pos_fiados', 'fiados', () => { 
+                updateFiadosClientList();
                 renderActiveViewOnly(); 
-            });
+            }, ['date', 'paidDate']);
             
-            watchCollection('pos_vendedores', (data) => { 
-                window.vendedores = data; 
+            watchCollection('pos_vendedores', 'vendedores', () => { 
                 renderVendedoresUI(); 
             });
             
-            watchCollection('pos_config', (data) => { 
-                if(data.length > 0) {
-                    const cfg = data.find(d => d.id === 'main_config');
-                    if (cfg) {
+            // Configuración principal (Manejo especial directo)
+            const configRef = window.fs.collection(window.db, 'artifacts', window.appId, 'public', 'data', 'pos_config');
+            window.fs.onSnapshot(configRef, (snapshot) => {
+                let hasChanges = false;
+                snapshot.docChanges().forEach((change) => {
+                    if (change.doc.id === 'main_config') {
+                        hasChanges = true;
+                        const cfg = change.doc.data();
                         window.appConfig = cfg.appConfig || window.appConfig;
                         window.currentIdCounter = Math.max(window.currentIdCounter, cfg.currentIdCounter || 1);
                         window.currentVendedor = cfg.currentVendedor || window.currentVendedor;
                     }
-                }
+                });
+                if (hasChanges) cacheLocally();
             });
         }
 
@@ -1348,6 +1421,11 @@
                     window.appConfig = { ...window.appConfig, ...(data.appConfig || {}) }; 
                     window.salesHistory = (data.salesHistory || []).map(s => ({...s, date: safeDateParse(s.date)}));
                     window.gastosHistory = (data.gastosHistory || []).map(g => ({...g, date: safeDateParse(g.date)}));
+                    
+                    // Si ya tenemos historial en la caché local, asumimos que no necesitamos bajarlo de la nube al iniciar.
+                    if (window.salesHistory.length > 0 || window.gastosHistory.length > 0) {
+                        window.hasFetchedHistory = true;
+                    }
                 }
             } catch (e) {}
             updateCategoryFilters();
@@ -1409,6 +1487,10 @@
                 uniqueCategories = ['Licor', 'Cerveza', 'Gaseosa', 'Snack', 'Extras', 'Cigarros']; 
             }
             if(datalist) datalist.innerHTML = uniqueCategories.map(c => `<option value="${c}"></option>`).join('');
+
+            const familyList = document.getElementById('family-list');
+            if(familyList) familyList.innerHTML = uniqueFamilies.map(f => `<option value="${f}"></option>`).join('');
+
             updateFiadosClientList();
         }
 
@@ -1424,23 +1506,34 @@
             updateAnalysisRange();
         }
 
+        async function forceSyncHistory() {
+            window.hasFetchedHistory = false; // Forzamos bandera a falso
+            await fetchHistoricalDataForAnalysis();
+            showModal('Historial Actualizado', 'Se ha sincronizado correctamente el historial completo desde la nube.');
+        }
+
         async function fetchHistoricalDataForAnalysis() {
             if (!window.db || !window.userId) return;
 
-            // VERIFICACIÓN DE MEMORIA: Si ya bajamos el historial en esta sesión, no volvemos a consumir Firebase
+            // VERIFICACIÓN DE MEMORIA: Si ya bajamos el historial en esta sesión (o iniciamos con cache), no volvemos a consumir Firebase
             if (window.hasFetchedHistory) {
                 if (!document.getElementById('filterStartDate').value) setAnalysisRange('mes'); 
                 else renderAnalysis();
                 return;
             }
 
-            const btn = document.getElementById('nav-analisis');
-            const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 md:w-6 md:h-6 animate-spin"></i><span class="text-[9px] md:text-[10px] font-medium hidden sm:block md:block">Cargando...</span>';
+            const navBtn = document.getElementById('nav-analisis');
+            const syncBtn = document.getElementById('btnSyncHistory');
+            const iconSync = document.getElementById('iconSyncHistory');
+            
+            const originalNavHtml = navBtn ? navBtn.innerHTML : '';
+            if (navBtn) navBtn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 md:w-6 md:h-6 animate-spin"></i><span class="text-[9px] md:text-[10px] font-medium hidden sm:block md:block">Cargando...</span>';
+            if (iconSync) iconSync.classList.add('animate-spin');
+            if (syncBtn) syncBtn.disabled = true;
             updateIcons();
 
             try {
-                // Descarga pesada (Historial completo) bajo demanda (SOLO 1 VEZ POR SESIÓN)
+                // Descarga pesada (Historial completo) bajo demanda (SOLO 1 VEZ POR SESIÓN O SI SE FUERZA EL SYNC)
                 const salesRef = window.fs.collection(window.db, 'artifacts', window.appId, 'public', 'data', 'pos_sales');
                 const gastosRef = window.fs.collection(window.db, 'artifacts', window.appId, 'public', 'data', 'pos_gastos');
                 
@@ -1476,16 +1569,19 @@
                 console.error("Error cargando historial completo", e);
             }
 
-            btn.innerHTML = originalHtml;
+            if (navBtn) navBtn.innerHTML = originalNavHtml;
+            if (iconSync) iconSync.classList.remove('animate-spin');
+            if (syncBtn) syncBtn.disabled = false;
             updateIcons();
             if (!document.getElementById('filterStartDate').value) setAnalysisRange('mes'); 
             else renderAnalysis();
         }
 
+        // ACTUALIZADO: Manejo correcto del autocompletado del buscador de Fiados
         function updateFiadosClientList() {
             const fiadoList = document.getElementById('fiado-clientes-list');
             if(fiadoList) { 
-                const uniqueClients = [...new Set(window.fiados.map(f => f.client))]; 
+                const uniqueClients = [...new Set(window.fiados.map(f => f.client).filter(Boolean))]; 
                 fiadoList.innerHTML = uniqueClients.sort().map(c => `<option value="${c}"></option>`).join(''); 
             }
         }
@@ -1845,7 +1941,6 @@
 
         function cancelEditPos() {
             if (window.editingPos) { 
-                // Ya no sobreescribimos arreglos, el edit se aborta
                 window.editingPos = null; 
             }
             window.cart = []; updateCartUI(); document.getElementById('searchInput').value = ''; document.getElementById('ventasHeaderTitle').textContent = 'Nueva Venta'; document.getElementById('cancelEditBtn').classList.add('hidden'); renderPosProducts();
@@ -1910,6 +2005,9 @@
                 
                 // Guardado Cloud Distribuido
                 dbAdd('pos_fiados', fiadoRecord, String(fId));
+
+                // ACTUALIZADO: Refrescar la datalist inmediatamente
+                updateFiadosClientList();
             }
 
             // Actualización optimista local
@@ -2102,6 +2200,159 @@
         function getCategoryIcon(category) { const c = (category || '').toLowerCase(); if (c.includes('licor') || c.includes('cervez') || c.includes('ron') || c.includes('pilsen')) return 'wine'; if (c.includes('gaseosa') || c.includes('agua') || c.includes('helado')) return 'glass-water'; if (c.includes('snack') || c.includes('comestible') || c.includes('chicle')) return 'cookie'; if (c.includes('extra') || c.includes('hielo') || c.includes('cigarro')) return 'snowflake'; return 'package'; }
 
         // --- ALMACÉN Y PRODUCTOS ---
+        
+        // --- LÓGICA DE INGRESO DE STOCK MULTILÍNEA ---
+        window.ingresoItems = [];
+
+        function openIngresoStockModal() {
+            window.ingresoItems = [];
+            addIngresoRow(); // Inicia con una fila vacía
+            const modal = document.getElementById('ingresoStockModal'); 
+            modal.classList.remove('hidden'); 
+            setTimeout(() => { modal.classList.remove('opacity-0'); modal.children[0].classList.remove('scale-95'); modal.children[0].classList.add('scale-100'); }, 10); 
+        }
+
+        function closeIngresoStockModal() {
+            const modal = document.getElementById('ingresoStockModal'); 
+            modal.classList.add('opacity-0'); 
+            modal.children[0].classList.remove('scale-100'); 
+            modal.children[0].classList.add('scale-95'); 
+            setTimeout(() => { modal.classList.add('hidden'); }, 300); 
+        }
+
+        function addIngresoRow() {
+            window.ingresoItems.push({ productId: '', qty: 1, type: 'unit', cost: 0 });
+            renderIngresoRows();
+        }
+
+        function removeIngresoRow(idx) {
+            window.ingresoItems.splice(idx, 1);
+            renderIngresoRows();
+        }
+
+        function renderIngresoRows() {
+            const container = document.getElementById('ingresoRowsContainer');
+            container.innerHTML = '';
+            let totalCost = 0;
+
+            window.ingresoItems.forEach((item, idx) => {
+                totalCost += item.cost;
+                const p = window.inventory.find(x => x.id === item.productId);
+                
+                let typeOptions = `<option value="unit" ${item.type === 'unit' ? 'selected' : ''}>Unidades</option>`;
+                if (p && p.isGroup) {
+                    typeOptions += `<option value="package" ${item.type === 'package' ? 'selected' : ''}>Paquetes (x${p.unitsPerGroup})</option>`;
+                }
+
+                // Opción para buscar productos ordenados alfabéticamente
+                let productOptions = `<option value="">Seleccione o busque producto...</option>`;
+                const sortedInventory = [...window.inventory].sort((a, b) => a.name.localeCompare(b.name));
+                sortedInventory.forEach(invP => {
+                    if (invP.name.startsWith('Envases Vacíos - ')) return;
+                    productOptions += `<option value="${invP.id}" ${invP.id === item.productId ? 'selected' : ''}>${invP.name} (${invP.size})</option>`;
+                });
+
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="bg-slate-900 border border-slate-700 p-3 md:p-4 rounded-xl flex flex-col sm:flex-row gap-3 sm:items-end group hover:border-emerald-500/50 transition-colors">
+                        <div class="w-full sm:w-2/5">
+                            <label class="block text-[10px] text-slate-400 mb-1 uppercase tracking-wider font-bold">Producto</label>
+                            <select onchange="updateIngresoItem(${idx}, 'productId', this.value)" class="w-full bg-slate-800 border border-slate-600 rounded-lg text-xs md:text-sm text-white px-3 py-2 outline-none focus:border-emerald-500 cursor-pointer">
+                                ${productOptions}
+                            </select>
+                        </div>
+                        <div class="w-full sm:w-1/5">
+                            <label class="block text-[10px] text-slate-400 mb-1 uppercase tracking-wider font-bold">Formato</label>
+                            <select onchange="updateIngresoItem(${idx}, 'type', this.value)" class="w-full bg-slate-800 border border-slate-600 rounded-lg text-xs md:text-sm text-white px-3 py-2 outline-none focus:border-emerald-500 cursor-pointer" ${!p ? 'disabled' : ''}>
+                                ${typeOptions}
+                            </select>
+                        </div>
+                        <div class="w-full sm:w-1/5 flex gap-2">
+                            <div class="w-full">
+                                <label class="block text-[10px] text-slate-400 mb-1 uppercase tracking-wider font-bold">Cantidad</label>
+                                <input type="number" min="1" value="${item.qty}" oninput="updateIngresoItem(${idx}, 'qty', this.value)" class="w-full bg-slate-800 border border-slate-600 rounded-lg text-xs md:text-sm text-white px-3 py-2 outline-none focus:border-emerald-500 text-center" ${!p ? 'disabled' : ''}>
+                            </div>
+                        </div>
+                        <div class="w-full sm:w-1/5 relative">
+                            <label class="block text-[10px] text-slate-400 mb-1 uppercase tracking-wider font-bold">Costo Fila</label>
+                            <span class="absolute left-3 bottom-2 text-slate-400 text-xs md:text-sm font-bold">S/</span>
+                            <input type="number" step="0.1" value="${item.cost.toFixed(2)}" oninput="updateIngresoItem(${idx}, 'cost', this.value, true)" class="w-full bg-slate-800 border border-slate-600 rounded-lg text-xs md:text-sm font-bold text-red-400 pl-8 pr-3 py-2 outline-none focus:border-red-500 text-right hide-arrows" ${!p ? 'disabled' : ''}>
+                        </div>
+                        <button onclick="removeIngresoRow(${idx})" class="p-2.5 text-slate-500 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors flex-shrink-0 self-end sm:self-auto mb-[1px]" title="Eliminar fila"><i data-lucide="trash-2" class="w-4 h-4 md:w-5 md:h-5"></i></button>
+                    </div>
+                `);
+            });
+            document.getElementById('ingresoTotalCost').textContent = `S/ ${totalCost.toFixed(2)}`;
+            updateIcons();
+        }
+
+        function updateIngresoItem(idx, field, val, manualCost = false) {
+            const item = window.ingresoItems[idx];
+            if (field === 'qty') item.qty = parseInt(val) || 0;
+            else if (field === 'cost') item.cost = parseFloat(val) || 0;
+            else item[field] = val;
+
+            if (!manualCost && (field === 'productId' || field === 'qty' || field === 'type')) {
+                const p = window.inventory.find(x => x.id === item.productId);
+                if (p) {
+                    if (field === 'productId' && !p.isGroup) item.type = 'unit'; // Reset a unit si no tiene paquetes
+                    
+                    let unitCost = parseFloat(p.cost) || 0;
+                    // Si el costo guardado del producto es por paquete, obtenemos costo unitario real. (Asume p.cost es de unidad)
+                    // (Ojo: El usuario guarda costo por unidad en el POS actual)
+                    
+                    if (item.type === 'package') {
+                        item.cost = item.qty * p.unitsPerGroup * unitCost;
+                    } else {
+                        item.cost = item.qty * unitCost;
+                    }
+                } else {
+                    item.cost = 0;
+                }
+            }
+            renderIngresoRows();
+        }
+
+        function processIngresoStock() {
+            const validItems = window.ingresoItems.filter(i => i.productId && i.qty > 0);
+            if (validItems.length === 0) { showModal("Atención", "Agrega al menos un producto con cantidad mayor a 0."); return; }
+
+            let totalCost = 0;
+            let addedDetails = [];
+
+            validItems.forEach(item => {
+                const p = window.inventory.find(x => x.id === item.productId);
+                if (p) {
+                    let qtyToAdd = item.type === 'package' ? (item.qty * p.unitsPerGroup) : item.qty;
+                    // Actualización Local y Cloud (Stock)
+                    dbUpdate('pos_inventory', p.id, { stock: window.fs.increment(qtyToAdd) });
+                    p.stock += qtyToAdd;
+                    totalCost += item.cost;
+                    addedDetails.push(`${item.qty}${item.type === 'package' ? 'pq' : 'un'} ${p.name}`);
+                }
+            });
+
+            if (totalCost > 0) {
+                const txId = Date.now();
+                const now = new Date();
+                let descGasto = `Ingreso Mercadería: ${addedDetails.join(', ')}`;
+                descGasto = descGasto.substring(0, 100) + (descGasto.length > 100 ? '...' : '');
+
+                const gastoObj = { 
+                    id: txId, date: txId, desc: descGasto, monto: totalCost, 
+                    method: 'efectivo', type: 'COMPRA_MERCADERIA', 
+                    vendedor: window.currentVendedor || 'Sin Asignar' 
+                };
+                
+                window.gastosHistory.push({...gastoObj, date: now});
+                dbAdd('pos_gastos', gastoObj, String(txId));
+            }
+
+            cacheLocally();
+            closeIngresoStockModal();
+            renderActiveViewOnly();
+            showModal("¡Ingreso Registrado!", `Se actualizó el stock y se registró una compra/gasto de <strong class="text-red-400">S/ ${totalCost.toFixed(2)}</strong>.`);
+        }
+
         function toggleAdvancedSales() {
             const sec = document.getElementById('advancedSalesSection'); const arrow = document.getElementById('advArrow');
             if (sec.classList.contains('hidden')) { sec.classList.remove('hidden'); arrow.classList.add('rotate-180'); } 
@@ -2206,9 +2457,14 @@
         function closeAddProductModal() { document.getElementById('addProductModal').classList.add('hidden'); }
         
         function saveProduct() {
-            const name = document.getElementById('p_name').value.trim(); const size = document.getElementById('p_size').value.trim(); const category = document.getElementById('p_category').value || 'Otros';
+            const name = document.getElementById('p_name').value.trim(); 
+            const size = document.getElementById('p_size').value.trim() || '-'; 
+            const category = document.getElementById('p_category').value || 'Otros';
             const family = document.getElementById('p_family').value.trim();
-            const price = parseFloat(document.getElementById('p_price').value); const cost = parseFloat(document.getElementById('p_cost').value) || 0; const stock = parseInt(document.getElementById('p_stock').value); const minStock = parseInt(document.getElementById('p_minstock').value);
+            const price = parseFloat(document.getElementById('p_price').value) || 0; 
+            const cost = parseFloat(document.getElementById('p_cost').value) || 0; 
+            const stock = parseInt(document.getElementById('p_stock').value) || 0; 
+            const minStock = parseInt(document.getElementById('p_minstock').value) || 0;
             const isGroup = document.getElementById('p_isGroup').checked;
             const unitsPerGroup = parseInt(document.getElementById('p_unitsPerGroup').value) || 1;
             const unitPrice = parseFloat(document.getElementById('p_unitPrice').value) || price;
@@ -2216,7 +2472,10 @@
             const hasEnvase = document.getElementById('p_hasEnvase').checked;
             const envasePrice = hasEnvase ? (parseFloat(document.getElementById('p_envasePrice').value) || 0) : 0;
 
-            if(!name || !size || isNaN(price) || isNaN(cost) || isNaN(stock) || isNaN(minStock)) return;
+            if(!name) {
+                document.getElementById('p_name').focus();
+                return;
+            }
 
             const validPromos = window.modalPromos.map(p => ({...p, items: p.items.filter(i => i.id !== '')})).filter(p => p.name && !isNaN(p.price));
             const validDiscounts = window.modalDiscounts.filter(d => !isNaN(d.qty) && !isNaN(d.price));
@@ -2235,6 +2494,10 @@
                 window.inventory.push({ id: newId, ...prodData }); 
                 dbAdd('pos_inventory', prodData, String(newId));
             }
+            
+            // ACTUALIZADO: Refresca la lista de categorías y familias inmediatamente para que se reflejen en los filtros
+            updateCategoryFilters();
+            
             cacheLocally(); closeAddProductModal(); renderActiveViewOnly();
         }
 
@@ -2242,6 +2505,10 @@
             window.inventory = window.inventory.filter(p => p.id != id); 
             window.cart = window.cart.filter(c => c.product.id != id); 
             dbDelete('pos_inventory', id);
+            
+            // ACTUALIZADO: Refresca filtros si se elimina la última categoría
+            updateCategoryFilters();
+            
             updateCartUI(); cacheLocally(); renderActiveViewOnly(); 
         }
 
@@ -2256,8 +2523,13 @@
             let filtered = window.inventory; 
             if (window.isLowStockFilterActive) filtered = filtered.filter(p => p.stock <= p.minStock); 
             
+            // ACTUALIZADO: Filtrado robusto usando validaciones nulas (?.toLowerCase())
             filtered = filtered.filter(p => {
-                const matchSearch = p.name?.toLowerCase().includes(searchTerm) || p.size?.toLowerCase().includes(searchTerm);
+                const n = p.name ? p.name.toLowerCase() : '';
+                const s = p.size ? p.size.toLowerCase() : '';
+                const f = p.family ? p.family.toLowerCase() : '';
+                
+                const matchSearch = n.includes(searchTerm) || s.includes(searchTerm) || f.includes(searchTerm);
                 const matchCategory = categoryTerm === '' || p.category === categoryTerm;
                 const matchFamily = familyTerm === '' || p.family === familyTerm;
                 return matchSearch && matchCategory && matchFamily;
@@ -2321,11 +2593,16 @@
                 return; 
             }
 
+            // ACTUALIZADO: Filtrado robusto usando validaciones nulas (?.toLowerCase())
             let filteredProducts = window.inventory.filter(p => {
                 // Ocultar productos "fantasmas" de envases
                 if (p.name.startsWith('Envases Vacíos - ')) return false;
 
-                const matchSearch = p.name?.toLowerCase().includes(searchTerm) || p.size?.toLowerCase().includes(searchTerm) || p.family?.toLowerCase().includes(searchTerm);
+                const n = p.name ? p.name.toLowerCase() : '';
+                const s = p.size ? p.size.toLowerCase() : '';
+                const f = p.family ? p.family.toLowerCase() : '';
+                
+                const matchSearch = n.includes(searchTerm) || s.includes(searchTerm) || f.includes(searchTerm);
                 const matchCategory = categoryTerm === '' || p.category === categoryTerm;
                 const matchFamily = familyTerm === '' || p.family === familyTerm;
                 return matchSearch && matchCategory && matchFamily;
@@ -3088,6 +3365,127 @@
             }
         }
 
+        // --- LÓGICA DE ENVASES Y AJUSTES EXTRAS ---
+        function openReturnEnvaseModal() {
+            const select = document.getElementById('re_producto');
+            select.innerHTML = '<option value="">Seleccione producto...</option>';
+            const envaseProducts = window.inventory.filter(p => p.hasEnvase && !p.name.startsWith('Envases Vacíos - '));
+            envaseProducts.forEach(p => {
+                select.insertAdjacentHTML('beforeend', `<option value="${p.id}" data-price="${p.envasePrice || 1}">${p.name} (S/ ${parseFloat(p.envasePrice || 1).toFixed(2)})</option>`);
+            });
+            document.getElementById('re_cantidad').value = 1;
+            document.getElementById('re_total').textContent = 'S/ 0.00';
+            
+            const modal = document.getElementById('returnEnvaseModal'); 
+            modal.classList.remove('hidden'); 
+            setTimeout(() => { modal.classList.remove('opacity-0'); modal.children[0].classList.remove('scale-95'); modal.children[0].classList.add('scale-100'); }, 10); 
+        }
+
+        function calculateReturnEnvase() {
+            const select = document.getElementById('re_producto');
+            const qty = parseInt(document.getElementById('re_cantidad').value) || 0;
+            if (select.selectedIndex > 0 && qty > 0) {
+                const price = parseFloat(select.options[select.selectedIndex].getAttribute('data-price')) || 0;
+                document.getElementById('re_total').textContent = `S/ ${(price * qty).toFixed(2)}`;
+            } else {
+                document.getElementById('re_total').textContent = 'S/ 0.00';
+            }
+        }
+
+        function processReturnEnvase() {
+            const select = document.getElementById('re_producto');
+            const qty = parseInt(document.getElementById('re_cantidad').value) || 0;
+            if (select.selectedIndex <= 0 || qty <= 0) return;
+
+            const productId = select.value;
+            const price = parseFloat(select.options[select.selectedIndex].getAttribute('data-price')) || 0;
+            const totalRefund = price * qty;
+            
+            const product = window.inventory.find(p => p.id == productId);
+            if(!product) return;
+
+            // 1. Manejo del producto Fantasma (Inventario de vidrios)
+            const ghostName = `Envases Vacíos - ${product.name}`;
+            let ghostProduct = window.inventory.find(p => p.name === ghostName);
+            
+            if (ghostProduct) {
+                dbUpdate('pos_inventory', ghostProduct.id, { stock: window.fs.increment(qty) });
+                ghostProduct.stock += qty;
+            } else {
+                const newId = generateId();
+                const newGhost = { 
+                    id: newId, name: ghostName, category: 'Extras', size: 'Vacío',
+                    price: 0, cost: 0, stock: qty, minStock: 0, isGroup: false, hasEnvase: false, 
+                    color: 'bg-slate-700/20 text-slate-500' 
+                };
+                window.inventory.push(newGhost);
+                dbAdd('pos_inventory', newGhost, String(newId));
+            }
+
+            // 2. Registro del gasto en caja
+            const txId = Date.now();
+            const gastoObj = { 
+                id: txId, date: txId, desc: `Devolución Envases (${qty}x ${product.name})`, 
+                monto: totalRefund, method: 'efectivo', type: 'DEVOLUCION_ENVASE',
+                vendedor: window.currentVendedor || 'Sin Asignar'
+            };
+            window.gastosHistory.push({...gastoObj, date: new Date(txId)});
+            dbAdd('pos_gastos', gastoObj, String(txId));
+
+            cacheLocally();
+            closeReturnEnvaseModal();
+            showModal('¡Envases Recibidos!', `Se devolvieron <strong class="text-white">S/ ${totalRefund.toFixed(2)}</strong> al cliente por ${qty} envase(s).`);
+            renderActiveViewOnly();
+        }
+
+        function closeReturnEnvaseModal() { 
+            const modal = document.getElementById('returnEnvaseModal'); 
+            modal.classList.add('opacity-0'); 
+            modal.children[0].classList.remove('scale-100'); 
+            modal.children[0].classList.add('scale-95'); 
+            setTimeout(() => { modal.classList.add('hidden'); }, 300); 
+        }
+
+        function openExtraItemModal() {
+            document.getElementById('extra_desc').value = '';
+            document.getElementById('extra_price').value = '';
+            document.getElementById('extra_qty').value = '1';
+            const modal = document.getElementById('extraItemModal'); 
+            modal.classList.remove('hidden'); 
+            setTimeout(() => { modal.classList.remove('opacity-0'); modal.children[0].classList.remove('scale-95'); modal.children[0].classList.add('scale-100'); }, 10); 
+        }
+        
+        function closeExtraItemModal() {
+            const modal = document.getElementById('extraItemModal'); 
+            modal.classList.add('opacity-0'); 
+            modal.children[0].classList.remove('scale-100'); 
+            modal.children[0].classList.add('scale-95'); 
+            setTimeout(() => { modal.classList.add('hidden'); }, 300); 
+        }
+
+        function processExtraItem() {
+            let desc = document.getElementById('extra_desc').value.trim();
+            const price = parseFloat(document.getElementById('extra_price').value);
+            const qty = parseInt(document.getElementById('extra_qty').value) || 1;
+            
+            if (isNaN(price)) return;
+            if (!desc) desc = price < 0 ? 'Descuento' : 'Adicional';
+            
+            const finalDesc = price < 0 ? `Descuento: ${desc}` : `Adicional: ${desc}`;
+            
+            window.cart.push({
+                id: generateId(),
+                product: { 
+                    id: 'extra_' + Date.now(), name: finalDesc, size: 'Ajuste Manual', category: 'Otros',
+                    price: price, unitPrice: price, cost: 0, stock: 9999, isExtra: true 
+                },
+                type: 'unit', promoId: null, qty: qty, withEnvase: false
+            });
+            
+            updateCartUI();
+            closeExtraItemModal();
+        }
+
         // --- RESPALDO ---
         function exportBackup() {
             const expInv = document.getElementById('chkExpInv').checked; const expHist = document.getElementById('chkExpHist').checked; const expConf = document.getElementById('chkExpConf').checked;
@@ -3416,7 +3814,10 @@
             setAnalysisRange, toggleAnaCategory, showRangeBreakdown, openPagarFiadoModal, closePagarFiadoModal, 
             toggleEnvase, calcularVuelto, toggleFiadoMode, confirmarPagoFiado, processCheckout, debouncedRenderPosProducts,
             togglePagoMixto, autoCalcMix, applyCategoryFilterFromModal,
-            checkCurrentShift, getAttributedVendedor, addVendedor, setVendedor, deleteVendedor, setVendDateRange, renderVendedoresUI, renderVendedoresStats, showVendedorDetails, saveVendedorSchedule, closeVendedorDetailsModal
+            openReturnEnvaseModal, calculateReturnEnvase, processReturnEnvase, closeReturnEnvaseModal,
+            openExtraItemModal, closeExtraItemModal, processExtraItem,
+            checkCurrentShift, getAttributedVendedor, addVendedor, setVendedor, deleteVendedor, setVendDateRange, renderVendedoresUI, renderVendedoresStats, showVendedorDetails, saveVendedorSchedule, closeVendedorDetailsModal,
+            forceSyncHistory, openIngresoStockModal, closeIngresoStockModal, addIngresoRow, removeIngresoRow, updateIngresoItem, processIngresoStock
         });
 
         // Renderizado inicial sin bloqueos
