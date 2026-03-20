@@ -907,7 +907,7 @@
             </header>
             
             <div class="p-4 md:p-5 overflow-y-auto flex-1 custom-scrollbar">
-                <p class="text-xs md:text-sm text-slate-400 mb-4">Añade productos para actualizar su stock. El gasto se calculará y registrará en caja automáticamente (puedes editar el costo libremente si difiere del precio costo configurado).</p>
+                <p class="text-xs md:text-sm text-slate-400 mb-4">Añade productos para actualizar su stock.</p>
                 
                 <div class="space-y-3 mb-4" id="ingresoRowsContainer">
                     <!-- Filas inyectadas por JS -->
@@ -1372,7 +1372,7 @@
 
         async function initFirebase() {
             try {
-                // Forzamos el uso de TU propia base de datos ignorando el entorno temporal del Canvas
+                // EXCLUSIVO: Conexión forzada a TU base de datos (raspadillas-bb435) para recuperar los 138 productos.
                 const firebaseConfig = {
                   apiKey: "AIzaSyDU3rQDn6bjZaZGPif2r48mcgEcCqlzSn4",
                   authDomain: "raspadillas-bb435.firebaseapp.com",
@@ -1387,7 +1387,9 @@
                 window.auth = getAuth(app); 
                 window.db = getFirestore(app);
                 
-                // Forzamos inicio anónimo directo a tu Firebase
+                console.log("🟢 Conectando a Firebase de Producción:", window.appId);
+
+                // Forzamos inicio anónimo directo a tu Firebase para leer tus datos
                 const initAuth = async () => { 
                     await signInAnonymously(window.auth); 
                 };
@@ -2269,13 +2271,13 @@
                         <div class="w-full sm:w-1/5 flex gap-2">
                             <div class="w-full">
                                 <label class="block text-[10px] text-slate-400 mb-1 uppercase tracking-wider font-bold">Cantidad</label>
-                                <input type="number" min="1" value="${item.qty}" oninput="updateIngresoItem(${idx}, 'qty', this.value)" class="w-full bg-slate-800 border border-slate-600 rounded-lg text-xs md:text-sm text-white px-3 py-2 outline-none focus:border-emerald-500 text-center" ${!p ? 'disabled' : ''}>
+                                <input type="number" min="1" value="${item.qty}" onclick="this.select()" onchange="updateIngresoItem(${idx}, 'qty', this.value)" class="w-full bg-slate-800 border border-slate-600 rounded-lg text-xs md:text-sm text-white px-3 py-2 outline-none focus:border-emerald-500 text-center" ${!p ? 'disabled' : ''}>
                             </div>
                         </div>
                         <div class="w-full sm:w-1/5 relative">
                             <label class="block text-[10px] text-slate-400 mb-1 uppercase tracking-wider font-bold">Costo Fila</label>
                             <span class="absolute left-3 bottom-2 text-slate-400 text-xs md:text-sm font-bold">S/</span>
-                            <input type="number" step="0.1" value="${item.cost.toFixed(2)}" oninput="updateIngresoItem(${idx}, 'cost', this.value, true)" class="w-full bg-slate-800 border border-slate-600 rounded-lg text-xs md:text-sm font-bold text-red-400 pl-8 pr-3 py-2 outline-none focus:border-red-500 text-right hide-arrows" ${!p ? 'disabled' : ''}>
+                            <input type="number" step="0.1" value="${item.cost.toFixed(2)}" onclick="this.select()" onchange="updateIngresoItem(${idx}, 'cost', this.value, true)" class="w-full bg-slate-800 border border-slate-600 rounded-lg text-xs md:text-sm font-bold text-red-400 pl-8 pr-3 py-2 outline-none focus:border-red-500 text-right hide-arrows" ${!p ? 'disabled' : ''}>
                         </div>
                         <button onclick="removeIngresoRow(${idx})" class="p-2.5 text-slate-500 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors flex-shrink-0 self-end sm:self-auto mb-[1px]" title="Eliminar fila"><i data-lucide="trash-2" class="w-4 h-4 md:w-5 md:h-5"></i></button>
                     </div>
@@ -2285,6 +2287,7 @@
             updateIcons();
         }
 
+        // ====== AQUÍ ESTÁ LA CORRECCIÓN SOLICITADA ======
         function updateIngresoItem(idx, field, val, manualCost = false) {
             const item = window.ingresoItems[idx];
             if (field === 'qty') item.qty = parseInt(val) || 0;
@@ -2295,15 +2298,21 @@
                 const p = window.inventory.find(x => x.id === item.productId);
                 if (p) {
                     if (field === 'productId' && !p.isGroup) item.type = 'unit'; // Reset a unit si no tiene paquetes
+
+                    // El costo guardado en el producto representa el PAQUETE COMPLETO
+                    let costoPaquete = parseFloat(p.cost) || 0;
+                    let costoUnitario = costoPaquete;
                     
-                    let unitCost = parseFloat(p.cost) || 0;
-                    // Si el costo guardado del producto es por paquete, obtenemos costo unitario real. (Asume p.cost es de unidad)
-                    // (Ojo: El usuario guarda costo por unidad en el POS actual)
-                    
+                    if (p.isGroup && p.unitsPerGroup > 0) {
+                        costoUnitario = costoPaquete / p.unitsPerGroup;
+                    }
+
                     if (item.type === 'package') {
-                        item.cost = item.qty * p.unitsPerGroup * unitCost;
+                        // Si selecciona paquetes, el costo es Cantidad x Costo del Paquete
+                        item.cost = item.qty * costoPaquete;
                     } else {
-                        item.cost = item.qty * unitCost;
+                        // Si selecciona unidades, el costo es Cantidad x Costo Unitario
+                        item.cost = item.qty * costoUnitario;
                     }
                 } else {
                     item.cost = 0;
@@ -2311,6 +2320,7 @@
             }
             renderIngresoRows();
         }
+        // =================================================
 
         function processIngresoStock() {
             const validItems = window.ingresoItems.filter(i => i.productId && i.qty > 0);
@@ -2539,13 +2549,13 @@
             let inventoryValue = 0;
             window.inventory.forEach(p => {
                 let s = parseFloat(p.stock);
-                let c = parseFloat(p.cost);
+                let c = parseFloat(p.cost); // package cost
                 if (!isNaN(s) && !isNaN(c) && s > 0 && c > 0) {
                     let unitCost = c;
                     if (p.isGroup && p.unitsPerGroup > 0) {
                         unitCost = c / p.unitsPerGroup;
                     }
-                    inventoryValue += (s * unitCost);
+                    inventoryValue += (s * unitCost); // s is total units. s * unitCost is correct!
                 }
             });
             const statInvVal = document.getElementById('stat-inventory-value');
